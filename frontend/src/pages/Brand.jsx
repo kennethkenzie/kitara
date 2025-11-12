@@ -71,15 +71,15 @@ const Brand = () => {
         {/* About */}
         <Card className="bg-gray-900 border-gray-800 mb-16">
           <CardHeader>
-            <CardTitle className="text-white text-3xl">About ReelShort</CardTitle>
+            <CardTitle className="text-white text-3xl">About Kitara Cinema</CardTitle>
             <CardDescription className="text-gray-400 text-lg">The future of entertainment</CardDescription>
           </CardHeader>
           <CardContent className="text-gray-300 space-y-4">
             <p>
-              ReelShort is a next-generation streaming platform that delivers premium short-form dramatic content. Our mission is to revolutionize how people consume entertainment by offering bite-sized episodes that fit perfectly into modern lifestyles.
+              Kitara Cinema is a next-generation streaming platform that delivers premium short-form dramatic content. Our mission is to revolutionize how people consume entertainment by offering bite-sized episodes that fit perfectly into modern lifestyles.
             </p>
             <p>
-              With a focus on high-quality storytelling, diverse genres, and engaging narratives, ReelShort has become the go-to platform for millions of viewers seeking quick entertainment that doesn't compromise on quality.
+              With a focus on high-quality storytelling, diverse genres, and engaging narratives, Kitara Cinema has become the go-to platform for millions of viewers seeking quick entertainment that doesn't compromise on quality.
             </p>
             <p>
               Our innovative coin-based system allows viewers to unlock premium content while supporting creators, fostering a sustainable ecosystem for digital entertainment.
