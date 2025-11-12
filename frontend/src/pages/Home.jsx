@@ -1,15 +1,29 @@
-import React, { useRef } from 'react';
+import React, { useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Play, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import ShowCard from '../components/ShowCard';
 import { shows } from '../mockData';
+import useEmblaCarousel from 'embla-carousel-react';
+import Autoplay from 'embla-carousel-autoplay';
 
 const Home = () => {
   const navigate = useNavigate();
-  const featuredShow = shows.find(s => s.isFeatured) || shows[12];
+  const featuredShows = [shows[12], shows[0], shows[4], shows[5], shows[1]];
 
   const scrollContainerRef = useRef({});
+  
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [
+    Autoplay({ delay: 5000, stopOnInteraction: false })
+  ]);
+
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
+
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
 
   const scroll = (category, direction) => {
     const container = scrollContainerRef.current[category];
