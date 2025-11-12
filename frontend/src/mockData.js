@@ -215,7 +215,7 @@ export const generateEpisodes = (showId, totalEpisodes) => {
 export const user = {
   id: 1,
   name: 'Guest User',
-  email: 'guest@reelshort.com',
+  email: 'guest@kitaracinema.com',
   avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop',
   coins: 150,
   watchlist: [1, 3, 6, 13],
