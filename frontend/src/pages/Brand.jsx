@@ -30,7 +30,7 @@ const Brand = () => {
           <div className="inline-block p-3 bg-pink-500/20 rounded-full mb-4">
             <Sparkles className="w-8 h-8 text-pink-500" />
           </div>
-          <h1 className="text-5xl font-bold text-white mb-4">ReelShort Brand</h1>
+          <h1 className="text-5xl font-bold text-white mb-4">Kitara Cinema Brand</h1>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
             Revolutionizing short-form entertainment with bite-sized dramatic content that captivates millions of viewers worldwide.
           </p>
