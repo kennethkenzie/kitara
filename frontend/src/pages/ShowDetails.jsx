@@ -17,6 +17,7 @@ const ShowDetails = () => {
   const [loading, setLoading] = useState(true);
   const [isInWatchlist, setIsInWatchlist] = useState(false);
   const [watchlistLoading, setWatchlistLoading] = useState(false);
+  const [paymentModal, setPaymentModal] = useState({ isOpen: false, episode: null });
 
   useEffect(() => {
     fetchShowDetails();
