@@ -259,8 +259,9 @@ async def purchase_coins(amount: int, user = Depends(get_current_user)):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-# Include the router in the main app
+# Include the routers in the main app
 app.include_router(api_router)
+api_router.include_router(admin_router)
 
 app.add_middleware(
     CORSMiddleware,
