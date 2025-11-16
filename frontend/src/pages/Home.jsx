@@ -15,9 +15,14 @@ const Home = () => {
 
   const scrollContainerRef = useRef({});
   
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [
-    Autoplay({ delay: 5000, stopOnInteraction: false })
-  ]);
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    { 
+      loop: true,
+      duration: 20,
+      skipSnaps: false
+    }, 
+    [Autoplay({ delay: 5000, stopOnInteraction: false })]
+  );
 
   const scrollPrev = useCallback(() => {
     if (emblaApi) emblaApi.scrollPrev();
