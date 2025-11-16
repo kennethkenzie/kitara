@@ -1,19 +1,69 @@
-import React from 'react';
-import { Heart, Trash2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Heart, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import ShowCard from '../components/ShowCard';
-import { shows, user } from '../mockData';
+import { watchlistAPI } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { toast } from '../hooks/use-toast';
 
 const Watchlist = () => {
-  const watchlistShows = shows.filter((show) => user.watchlist.includes(show.id));
+  const [watchlistShows, setWatchlistShows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
-  const handleClearWatchlist = () => {
-    toast({
-      title: 'Watchlist Cleared',
-      description: 'All shows have been removed from your watchlist.',
-    });
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    fetchWatchlist();
+  }, [user]);
+
+  const fetchWatchlist = async () => {
+    try {
+      const data = await watchlistAPI.get();
+      setWatchlistShows(data);
+    } catch (error) {
+      console.error('Error fetching watchlist:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load watchlist',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleClearWatchlist = async () => {
+    try {
+      // Remove all items one by one
+      for (const item of watchlistShows) {
+        await watchlistAPI.remove(item.show_id);
+      }
+      setWatchlistShows([]);
+      toast({
+        title: 'Watchlist Cleared',
+        description: 'All shows have been removed from your watchlist.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to clear watchlist',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <Loader2 className="w-12 h-12 text-pink-500 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black pt-24 px-12 pb-20">
@@ -36,8 +86,8 @@ const Watchlist = () => {
 
       {watchlistShows.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
-          {watchlistShows.map((show) => (
-            <ShowCard key={show.id} show={show} />
+          {watchlistShows.map((item) => (
+            <ShowCard key={item.id} show={item.shows} />
           ))}
         </div>
       ) : (
@@ -46,7 +96,7 @@ const Watchlist = () => {
           <p className="text-gray-400 text-lg">Your watchlist is empty</p>
           <p className="text-gray-500 mt-2">Add shows to your watchlist to watch them later</p>
           <Button
-            onClick={() => window.location.href = '/categories'}
+            onClick={() => navigate('/categories')}
             className="mt-6 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white"
           >
             Browse Shows
