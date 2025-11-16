@@ -60,6 +60,14 @@ const Home = () => {
     { title: 'New Releases', shows: shows.slice(0, 8) },
   ];
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <Loader2 className="w-12 h-12 text-pink-500 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-black">
       {/* Hero Carousel Section */}
