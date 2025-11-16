@@ -209,25 +209,31 @@ SHOWS_DATA = [
 ]
 
 def setup_database():
-    print("Note: Database schema creation must be done via Supabase SQL Editor")
-    print("Please run the SQL commands manually in your Supabase dashboard")
-    print("\n1. Go to: https://uxygqpqfzgpqsumejzss.supabase.co")
-    print("2. Navigate to SQL Editor")
-    print("3. Copy and paste the SQL from CREATE_TABLES_SQL in this file")
-    print("\nAfter creating tables, run this script again to seed data")
-    print("\n" + "="*60)
+    print("="*60)
+    print("Kitara Cinema - Database Seeding Script")
+    print("="*60)
     
     # Try to seed shows data
     try:
-        print("\nAttempting to seed shows data...")
-        response = supabase.table('shows').select('id').limit(1).execute()
+        print("\nChecking existing data...")
+        response = supabase.table('shows').select('id').execute()
         
         # Check if table exists and has data
         if response.data is not None:
-            existing_count = len(supabase.table('shows').select('id').execute().data)
+            existing_count = len(response.data)
             if existing_count > 0:
                 print(f"✓ Database already has {existing_count} shows. Skipping seed.")
                 return
+            
+            print("\nSeeding shows and episodes...")
+            print("Note: If you get RLS policy errors, run the SQL below in Supabase SQL Editor:")
+            print("\n-- Temporarily disable RLS for seeding")
+            print("ALTER TABLE shows DISABLE ROW LEVEL SECURITY;")
+            print("ALTER TABLE episodes DISABLE ROW LEVEL SECURITY;")
+            print("\nThen run this script again, and re-enable RLS after:\n")
+            print("ALTER TABLE shows ENABLE ROW LEVEL SECURITY;")
+            print("ALTER TABLE episodes ENABLE ROW LEVEL SECURITY;")
+            print("\n" + "="*60 + "\n")
             
             # Insert shows
             for show_data in SHOWS_DATA:
@@ -255,10 +261,14 @@ def setup_database():
                     print(f"  Created {min(10, total_eps)} episodes")
             
             print("\n✓ Database seeded successfully!")
+            print("\nDon't forget to re-enable RLS if you disabled it!")
             
     except Exception as e:
         print(f"\n✗ Error: {str(e)}")
-        print("\nMake sure you've created the tables first using the SQL Editor!")
+        print("\nTo fix RLS policy errors, run this SQL in Supabase SQL Editor:")
+        print("\nALTER TABLE shows DISABLE ROW LEVEL SECURITY;")
+        print("ALTER TABLE episodes DISABLE ROW LEVEL SECURITY;")
+        print("\nThen run this script again.")
 
 if __name__ == "__main__":
     setup_database()
