@@ -105,9 +105,11 @@ const PaymentModal = ({ isOpen, onClose, episode, onSuccess }) => {
                 <RadioGroupItem value="mtn" id="mtn" />
                 <Label htmlFor="mtn" className="flex-1 cursor-pointer">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center font-bold text-black">
-                      MTN
-                    </div>
+                    <img 
+                      src="https://ik.imagekit.io/hqhiltiie/kitara/MTN-logo.jpg" 
+                      alt="MTN Logo"
+                      className="w-12 h-12 object-contain rounded"
+                    />
                     <div>
                       <p className="text-white font-medium">MTN Mobile Money</p>
                       <p className="text-xs text-gray-400">Pay with MTN MoMo</p>
@@ -120,9 +122,11 @@ const PaymentModal = ({ isOpen, onClose, episode, onSuccess }) => {
                 <RadioGroupItem value="airtel" id="airtel" />
                 <Label htmlFor="airtel" className="flex-1 cursor-pointer">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center font-bold text-white">
-                      A
-                    </div>
+                    <img 
+                      src="https://ik.imagekit.io/hqhiltiie/kitara/Airtel_logo-01.png" 
+                      alt="Airtel Logo"
+                      className="w-12 h-12 object-contain rounded"
+                    />
                     <div>
                       <p className="text-white font-medium">Airtel Money</p>
                       <p className="text-xs text-gray-400">Pay with Airtel Money</p>
