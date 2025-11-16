@@ -88,15 +88,26 @@ const ShowDetails = () => {
   };
 
   const handlePlayEpisode = (episode) => {
-    if (episode.is_locked && (!profile || profile.coins < episode.coins_required)) {
-      toast({
-        title: 'Insufficient Coins',
-        description: `You need ${episode.coins_required} coins to unlock this episode.`,
-        variant: 'destructive',
-      });
+    // Check if episode is locked (episodes 6+)
+    if (episode.is_locked) {
+      if (!user) {
+        navigate('/auth', { state: { from: { pathname: `/show/${id}` } } });
+        return;
+      }
+      // Open payment modal
+      setPaymentModal({ isOpen: true, episode });
       return;
     }
     navigate(`/player/${show.id}/${episode.episode_number}`);
+  };
+
+  const handlePaymentSuccess = () => {
+    // Refresh show details to get updated episode access
+    fetchShowDetails();
+    toast({
+      title: 'Success!',
+      description: 'Episode unlocked. Enjoy watching!',
+    });
   };
 
   if (loading) {
