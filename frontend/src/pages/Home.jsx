@@ -78,9 +78,9 @@ const Home = () => {
       {/* Hero Carousel Section */}
       <div className="relative h-[600px] w-full overflow-hidden group">
         <div ref={emblaRef} className="overflow-hidden h-full">
-          <div className="flex h-full">
+          <div className="flex h-full" style={{ transition: 'opacity 1s ease-in-out' }}>
             {featuredShows.map((featuredShow, index) => (
-              <div key={index} className="flex-[0_0_100%] min-w-0 relative h-full">
+              <div key={index} className="flex-[0_0_100%] min-w-0 relative h-full" style={{ transition: 'opacity 1s ease-in-out' }}>
                 <div className="absolute inset-0">
                   <img
                     src={featuredShow.thumbnail}
