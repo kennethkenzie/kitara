@@ -1,15 +1,17 @@
-import React, { useRef, useCallback, useEffect } from 'react';
+import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Play, ChevronRight, ChevronLeft, Loader2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import ShowCard from '../components/ShowCard';
-import { shows } from '../mockData';
+import { showsAPI } from '../services/api';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 
 const Home = () => {
   const navigate = useNavigate();
-  const featuredShows = [shows[12], shows[0], shows[4], shows[5], shows[1]];
+  const [shows, setShows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [featuredShows, setFeaturedShows] = useState([]);
 
   const scrollContainerRef = useRef({});
   
@@ -24,6 +26,23 @@ const Home = () => {
   const scrollNext = useCallback(() => {
     if (emblaApi) emblaApi.scrollNext();
   }, [emblaApi]);
+
+  useEffect(() => {
+    fetchShows();
+  }, []);
+
+  const fetchShows = async () => {
+    try {
+      const data = await showsAPI.getAll();
+      setShows(data);
+      const featured = data.filter(s => s.is_featured);
+      setFeaturedShows(featured.length > 0 ? featured : data.slice(0, 5));
+    } catch (error) {
+      console.error('Error fetching shows:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const scroll = (category, direction) => {
     const container = scrollContainerRef.current[category];
