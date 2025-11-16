@@ -106,7 +106,7 @@ const Search = () => {
           <div>
             <h2 className="text-xl font-semibold text-white mb-4">Popular Shows</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {shows.slice(0, 10).map((show) => (
+              {popularShows.map((show) => (
                 <ShowCard key={show.id} show={show} />
               ))}
             </div>
