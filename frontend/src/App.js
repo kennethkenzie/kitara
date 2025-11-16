@@ -2,6 +2,7 @@ import React from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Categories from "./pages/Categories";
@@ -27,13 +28,31 @@ function App() {
             <Route path="/auth" element={<Auth />} />
             <Route path="/categories" element={<Categories />} />
             <Route path="/show/:id" element={<ShowDetails />} />
-            <Route path="/player/:showId/:episodeNumber" element={<VideoPlayer />} />
             <Route path="/search" element={<Search />} />
-            <Route path="/history" element={<History />} />
-            <Route path="/watchlist" element={<Watchlist />} />
-            <Route path="/profile" element={<Profile />} />
             <Route path="/fandom" element={<Fandom />} />
             <Route path="/brand" element={<Brand />} />
+            
+            {/* Protected Routes - Require Authentication */}
+            <Route path="/player/:showId/:episodeNumber" element={
+              <ProtectedRoute>
+                <VideoPlayer />
+              </ProtectedRoute>
+            } />
+            <Route path="/history" element={
+              <ProtectedRoute>
+                <History />
+              </ProtectedRoute>
+            } />
+            <Route path="/watchlist" element={
+              <ProtectedRoute>
+                <Watchlist />
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            } />
           </Routes>
           <Toaster />
         </AuthProvider>
