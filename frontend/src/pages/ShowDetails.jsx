@@ -249,6 +249,14 @@ const ShowDetails = () => {
           ))}
         </div>
       </div>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={paymentModal.isOpen}
+        onClose={() => setPaymentModal({ isOpen: false, episode: null })}
+        episode={paymentModal.episode}
+        onSuccess={handlePaymentSuccess}
+      />
     </div>
   );
 };
