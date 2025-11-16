@@ -227,9 +227,8 @@ const ShowDetails = () => {
                   {episode.is_locked ? (
                     <div className="flex flex-col items-center gap-2">
                       <Lock className="w-8 h-8 text-yellow-400" />
-                      <span className="text-yellow-400 font-semibold flex items-center gap-1">
-                        <div className="w-5 h-5 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-xs font-bold">C</div>
-                        {episode.coins_required}
+                      <span className="text-yellow-400 font-semibold">
+                        200 UGX
                       </span>
                     </div>
                   ) : (
