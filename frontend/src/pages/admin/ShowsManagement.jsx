@@ -5,7 +5,8 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Card, CardContent } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
-import { showsAPI, adminShowsAPI } from '../../services/api';
+import { showsAPI } from '../../services/api';
+import { adminShowsAPI } from '../../services/adminAPI';
 import { toast } from '../../hooks/use-toast';
 import {
   AlertDialog,
