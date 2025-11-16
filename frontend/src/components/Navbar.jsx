@@ -59,6 +59,14 @@ const Navbar = () => {
           >
             Brand
           </Link>
+          {profile?.is_admin && (
+            <Link
+              to="/admin"
+              className="text-yellow-400 font-semibold hover:text-yellow-300 transition-colors"
+            >
+              Admin
+            </Link>
+          )}
         </div>
 
         {/* Right Side Actions */}
