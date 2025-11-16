@@ -6,6 +6,7 @@ import { Badge } from '../components/ui/badge';
 import { showsAPI, watchlistAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from '../hooks/use-toast';
+import PaymentModal from '../components/PaymentModal';
 
 const ShowDetails = () => {
   const { id } = useParams();
