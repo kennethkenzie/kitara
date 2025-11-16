@@ -103,43 +103,54 @@ const Navbar = () => {
           </DropdownMenu>
 
           {/* User Profile */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="transition-transform hover:scale-105">
-                <Avatar className="w-9 h-9 border-2 border-pink-500">
-                  <AvatarImage src={user.avatar} />
-                  <AvatarFallback className="bg-pink-500 text-white">GU</AvatarFallback>
-                </Avatar>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-gray-900 border-gray-800 w-56">
-              <div className="px-3 py-2 border-b border-gray-800">
-                <p className="text-white font-semibold">{user.name}</p>
-                <p className="text-sm text-gray-400">{user.email}</p>
-                <div className="mt-2 flex items-center gap-2">
-                  <div className="w-6 h-6 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-xs font-bold">C</div>
-                  <span className="text-yellow-400 font-semibold">{user.coins} Coins</span>
+          {user && profile ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="transition-transform hover:scale-105">
+                  <Avatar className="w-9 h-9 border-2 border-pink-500">
+                    <AvatarImage src={profile.avatar} />
+                    <AvatarFallback className="bg-pink-500 text-white">
+                      {profile.name?.charAt(0) || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="bg-gray-900 border-gray-800 w-56">
+                <div className="px-3 py-2 border-b border-gray-800">
+                  <p className="text-white font-semibold">{profile.name}</p>
+                  <p className="text-sm text-gray-400">{profile.email}</p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <div className="w-6 h-6 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-xs font-bold">C</div>
+                    <span className="text-yellow-400 font-semibold">{profile.coins} Coins</span>
+                  </div>
                 </div>
-              </div>
-              <DropdownMenuItem onClick={() => navigate('/profile')} className="text-white hover:bg-gray-800 cursor-pointer">
-                <User className="w-4 h-4 mr-2" />
-                Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate('/watchlist')} className="text-white hover:bg-gray-800 cursor-pointer">
-                <Heart className="w-4 h-4 mr-2" />
-                My Watchlist
-              </DropdownMenuItem>
-              <DropdownMenuItem className="text-white hover:bg-gray-800 cursor-pointer">
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
-              </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-gray-800" />
-              <DropdownMenuItem className="text-pink-500 hover:bg-gray-800 cursor-pointer">
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <DropdownMenuItem onClick={() => navigate('/profile')} className="text-white hover:bg-gray-800 cursor-pointer">
+                  <User className="w-4 h-4 mr-2" />
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/watchlist')} className="text-white hover:bg-gray-800 cursor-pointer">
+                  <Heart className="w-4 h-4 mr-2" />
+                  My Watchlist
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-gray-800 cursor-pointer">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-gray-800" />
+                <DropdownMenuItem onClick={handleSignOut} className="text-pink-500 hover:bg-gray-800 cursor-pointer">
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button
+              onClick={() => navigate('/auth')}
+              className="bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white"
+            >
+              Sign In
+            </Button>
+          )}
         </div>
       </div>
     </nav>
