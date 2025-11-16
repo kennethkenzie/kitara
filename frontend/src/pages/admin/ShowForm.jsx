@@ -8,7 +8,8 @@ import { Textarea } from '../../components/ui/textarea';
 import { Switch } from '../../components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { showsAPI, adminShowsAPI } from '../../services/api';
+import { showsAPI } from '../../services/api';
+import { adminShowsAPI } from '../../services/adminAPI';
 import { toast } from '../../hooks/use-toast';
 
 const ShowForm = () => {
