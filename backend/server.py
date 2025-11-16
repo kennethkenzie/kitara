@@ -263,6 +263,7 @@ async def purchase_coins(amount: int, user = Depends(get_current_user)):
 # Include the routers in the main app
 app.include_router(api_router)
 api_router.include_router(admin_router)
+api_router.include_router(payment_router)
 
 app.add_middleware(
     CORSMiddleware,
