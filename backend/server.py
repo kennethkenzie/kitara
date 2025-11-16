@@ -9,6 +9,7 @@ from typing import List, Optional
 from supabase_client import supabase
 from auth import get_current_user
 from admin_routes import admin_router
+from payment_routes import payment_router
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
