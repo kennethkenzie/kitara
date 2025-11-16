@@ -1,27 +1,44 @@
-import React, { useState } from 'react';
-import { Search as SearchIcon, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search as SearchIcon, X, Loader2 } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import ShowCard from '../components/ShowCard';
-import { shows } from '../mockData';
+import { showsAPI } from '../services/api';
 
 const Search = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const [popularShows, setPopularShows] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const handleSearch = (query) => {
+  useEffect(() => {
+    fetchPopularShows();
+  }, []);
+
+  const fetchPopularShows = async () => {
+    try {
+      const data = await showsAPI.getAll();
+      setPopularShows(data.slice(0, 10));
+    } catch (error) {
+      console.error('Error fetching popular shows:', error);
+    }
+  };
+
+  const handleSearch = async (query) => {
     setSearchQuery(query);
     if (query.trim() === '') {
       setSearchResults([]);
       return;
     }
 
-    const results = shows.filter(
-      (show) =>
-        show.title.toLowerCase().includes(query.toLowerCase()) ||
-        show.category.toLowerCase().includes(query.toLowerCase()) ||
-        show.description.toLowerCase().includes(query.toLowerCase())
-    );
-    setSearchResults(results);
+    setLoading(true);
+    try {
+      const data = await showsAPI.getAll({ search: query });
+      setSearchResults(data);
+    } catch (error) {
+      console.error('Error searching:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const recentSearches = ['Romance', 'Thriller', 'Billionaire', 'Alpha', 'CEO'];
