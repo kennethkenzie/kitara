@@ -1,16 +1,109 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Play, Plus, Check, Share2, Star, Lock } from 'lucide-react';
+import { Play, Plus, Check, Share2, Star, Lock, Loader2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { shows, generateEpisodes, user } from '../mockData';
+import { showsAPI, watchlistAPI } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 import { toast } from '../hooks/use-toast';
 
 const ShowDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const show = shows.find((s) => s.id === parseInt(id));
-  const [isInWatchlist, setIsInWatchlist] = useState(user.watchlist.includes(parseInt(id)));
+  const { user, profile } = useAuth();
+  const [show, setShow] = useState(null);
+  const [episodes, setEpisodes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isInWatchlist, setIsInWatchlist] = useState(false);
+  const [watchlistLoading, setWatchlistLoading] = useState(false);
+
+  useEffect(() => {
+    fetchShowDetails();
+  }, [id]);
+
+  const fetchShowDetails = async () => {
+    try {
+      const [showData, episodesData] = await Promise.all([
+        showsAPI.getById(id),
+        showsAPI.getEpisodes(id),
+      ]);
+      setShow(showData);
+      setEpisodes(episodesData);
+      
+      // Check if in watchlist
+      if (user) {
+        try {
+          const watchlist = await watchlistAPI.get();
+          setIsInWatchlist(watchlist.some(item => item.show_id === id));
+        } catch (error) {
+          console.error('Error checking watchlist:', error);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching show details:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load show details',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleWatchlist = async () => {
+    if (!user) {
+      navigate('/auth', { state: { from: { pathname: `/show/${id}` } } });
+      return;
+    }
+
+    setWatchlistLoading(true);
+    try {
+      if (isInWatchlist) {
+        await watchlistAPI.remove(id);
+        setIsInWatchlist(false);
+        toast({
+          title: 'Removed from Watchlist',
+          description: `${show.title} has been removed from your watchlist.`,
+        });
+      } else {
+        await watchlistAPI.add(id);
+        setIsInWatchlist(true);
+        toast({
+          title: 'Added to Watchlist',
+          description: `${show.title} has been added to your watchlist.`,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update watchlist',
+        variant: 'destructive',
+      });
+    } finally {
+      setWatchlistLoading(false);
+    }
+  };
+
+  const handlePlayEpisode = (episode) => {
+    if (episode.is_locked && (!profile || profile.coins < episode.coins_required)) {
+      toast({
+        title: 'Insufficient Coins',
+        description: `You need ${episode.coins_required} coins to unlock this episode.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+    navigate(`/player/${show.id}/${episode.episode_number}`);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <Loader2 className="w-12 h-12 text-pink-500 animate-spin" />
+      </div>
+    );
+  }
 
   if (!show) {
     return (
@@ -19,30 +112,6 @@ const ShowDetails = () => {
       </div>
     );
   }
-
-  const episodes = generateEpisodes(show.id, show.episodes);
-
-  const toggleWatchlist = () => {
-    setIsInWatchlist(!isInWatchlist);
-    toast({
-      title: isInWatchlist ? 'Removed from Watchlist' : 'Added to Watchlist',
-      description: isInWatchlist
-        ? `${show.title} has been removed from your watchlist.`
-        : `${show.title} has been added to your watchlist.`,
-    });
-  };
-
-  const handlePlayEpisode = (episode) => {
-    if (episode.isLocked && user.coins < episode.coinsRequired) {
-      toast({
-        title: 'Insufficient Coins',
-        description: `You need ${episode.coinsRequired} coins to unlock this episode.`,
-        variant: 'destructive',
-      });
-      return;
-    }
-    navigate(`/player/${show.id}/${episode.episodeNumber}`);
-  };
 
   return (
     <div className="min-h-screen bg-black">
@@ -67,7 +136,7 @@ const ShowDetails = () => {
             />
             <div className="flex-1 space-y-4 pb-2">
               <div className="flex items-center gap-3">
-                {show.isExclusive && (
+                {show.is_exclusive && (
                   <Badge className="bg-pink-500 text-white border-none font-bold">
                     EXCLUSIVE
                   </Badge>
@@ -82,7 +151,7 @@ const ShowDetails = () => {
                   <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
                   <span className="font-semibold">{show.rating}</span>
                 </span>
-                <span>{show.episodes} Episodes</span>
+                <span>{show.total_episodes} Episodes</span>
                 <span>{show.views} Views</span>
                 <span>{show.duration}</span>
               </div>
@@ -101,8 +170,11 @@ const ShowDetails = () => {
                   size="lg"
                   variant="outline"
                   className="border-gray-600 text-white hover:bg-gray-800 rounded-full"
+                  disabled={watchlistLoading}
                 >
-                  {isInWatchlist ? (
+                  {watchlistLoading ? (
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  ) : isInWatchlist ? (
                     <Check className="w-5 h-5 mr-2" />
                   ) : (
                     <Plus className="w-5 h-5 mr-2" />
@@ -139,12 +211,12 @@ const ShowDetails = () => {
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-colors flex items-center justify-center">
-                  {episode.isLocked ? (
+                  {episode.is_locked ? (
                     <div className="flex flex-col items-center gap-2">
                       <Lock className="w-8 h-8 text-yellow-400" />
                       <span className="text-yellow-400 font-semibold flex items-center gap-1">
                         <div className="w-5 h-5 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-xs font-bold">C</div>
-                        {episode.coinsRequired}
+                        {episode.coins_required}
                       </span>
                     </div>
                   ) : (
@@ -159,7 +231,7 @@ const ShowDetails = () => {
               </div>
               <div className="p-3">
                 <h3 className="text-white font-semibold">{episode.title}</h3>
-                <p className="text-sm text-gray-400">Episode {episode.episodeNumber}</p>
+                <p className="text-sm text-gray-400">Episode {episode.episode_number}</p>
               </div>
             </div>
           ))}
