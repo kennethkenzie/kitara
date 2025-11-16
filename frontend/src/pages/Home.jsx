@@ -4,33 +4,41 @@ import { Play, ChevronRight, ChevronLeft, Loader2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import ShowCard from '../components/ShowCard';
 import { showsAPI } from '../services/api';
-import useEmblaCarousel from 'embla-carousel-react';
-import Autoplay from 'embla-carousel-autoplay';
 
 const Home = () => {
   const navigate = useNavigate();
   const [shows, setShows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [featuredShows, setFeaturedShows] = useState([]);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const scrollContainerRef = useRef({});
-  
-  const [emblaRef, emblaApi] = useEmblaCarousel(
-    { 
-      loop: true,
-      duration: 20,
-      skipSnaps: false
-    }, 
-    [Autoplay({ delay: 5000, stopOnInteraction: false })]
-  );
 
-  const scrollPrev = useCallback(() => {
-    if (emblaApi) emblaApi.scrollPrev();
-  }, [emblaApi]);
+  // Auto-advance carousel with fade
+  useEffect(() => {
+    if (featuredShows.length === 0) return;
+    
+    const interval = setInterval(() => {
+      handleNext();
+    }, 5000);
 
-  const scrollNext = useCallback(() => {
-    if (emblaApi) emblaApi.scrollNext();
-  }, [emblaApi]);
+    return () => clearInterval(interval);
+  }, [currentSlide, featuredShows]);
+
+  const handlePrev = useCallback(() => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setCurrentSlide((prev) => (prev === 0 ? featuredShows.length - 1 : prev - 1));
+    setTimeout(() => setIsTransitioning(false), 1000);
+  }, [featuredShows.length, isTransitioning]);
+
+  const handleNext = useCallback(() => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setCurrentSlide((prev) => (prev === featuredShows.length - 1 ? 0 : prev + 1));
+    setTimeout(() => setIsTransitioning(false), 1000);
+  }, [featuredShows.length, isTransitioning]);
 
   useEffect(() => {
     fetchShows();
