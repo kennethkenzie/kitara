@@ -1,22 +1,75 @@
-import React from 'react';
-import { Camera, Coins, Star, Clock, Heart, Settings, LogOut } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Camera, Coins, Star, Clock, Heart, Settings, LogOut, Loader2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Progress } from '../components/ui/progress';
-import { user, shows } from '../mockData';
+import { profileAPI, watchlistAPI, historyAPI } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { toast } from '../hooks/use-toast';
 
 const Profile = () => {
-  const watchlistShows = shows.filter((show) => user.watchlist.includes(show.id));
-  const totalWatchTime = user.watchHistory.length * 45; // Mock: 45 min average per show
+  const { user, profile, signOut, refreshProfile } = useAuth();
+  const navigate = useNavigate();
+  const [watchlistCount, setWatchlistCount] = useState(0);
+  const [historyCount, setHistoryCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  const handleBuyCoins = () => {
-    toast({
-      title: 'Purchase Coins',
-      description: 'Coin purchase feature coming soon!',
-    });
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    fetchStats();
+  }, [user]);
+
+  const fetchStats = async () => {
+    try {
+      const [watchlist, history] = await Promise.all([
+        watchlistAPI.get(),
+        historyAPI.get(),
+      ]);
+      setWatchlistCount(watchlist.length);
+      setHistoryCount(history.length);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleBuyCoins = async () => {
+    try {
+      await profileAPI.purchaseCoins(100);
+      await refreshProfile();
+      toast({
+        title: 'Coins Purchased!',
+        description: '100 coins have been added to your account.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to purchase coins',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
+  if (loading || !profile) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <Loader2 className="w-12 h-12 text-pink-500 animate-spin" />
+      </div>
+    );
+  }
+
+  const totalWatchTime = historyCount * 45; // Mock: 45 min average per show
 
   return (
     <div className="min-h-screen bg-black pt-24 px-12 pb-20">
@@ -27,32 +80,34 @@ const Profile = () => {
             <div className="flex items-start gap-8">
               <div className="relative group">
                 <Avatar className="w-32 h-32 border-4 border-pink-500">
-                  <AvatarImage src={user.avatar} />
-                  <AvatarFallback className="bg-pink-500 text-white text-3xl">GU</AvatarFallback>
+                  <AvatarImage src={profile.avatar} />
+                  <AvatarFallback className="bg-pink-500 text-white text-3xl">
+                    {profile.name?.charAt(0) || 'U'}
+                  </AvatarFallback>
                 </Avatar>
                 <button className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <Camera className="w-8 h-8 text-white" />
                 </button>
               </div>
               <div className="flex-1">
-                <h1 className="text-4xl font-bold text-white mb-2">{user.name}</h1>
-                <p className="text-gray-400 mb-4">{user.email}</p>
+                <h1 className="text-4xl font-bold text-white mb-2">{profile.name}</h1>
+                <p className="text-gray-400 mb-4">{profile.email}</p>
                 <div className="flex items-center gap-6">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-sm font-bold">C</div>
                     <div>
-                      <p className="text-yellow-400 font-bold text-xl">{user.coins}</p>
+                      <p className="text-yellow-400 font-bold text-xl">{profile.coins}</p>
                       <p className="text-xs text-gray-400">Coins Balance</p>
                     </div>
                   </div>
                   <div className="h-12 w-px bg-gray-700" />
                   <div>
-                    <p className="text-white font-bold text-xl">{user.watchHistory.length}</p>
+                    <p className="text-white font-bold text-xl">{historyCount}</p>
                     <p className="text-xs text-gray-400">Shows Watched</p>
                   </div>
                   <div className="h-12 w-px bg-gray-700" />
                   <div>
-                    <p className="text-white font-bold text-xl">{watchlistShows.length}</p>
+                    <p className="text-white font-bold text-xl">{watchlistCount}</p>
                     <p className="text-xs text-gray-400">In Watchlist</p>
                   </div>
                 </div>
@@ -147,6 +202,7 @@ const Profile = () => {
               Privacy Settings
             </Button>
             <Button
+              onClick={handleSignOut}
               variant="outline"
               className="w-full justify-start bg-gray-800 border-gray-700 text-pink-500 hover:bg-gray-700 hover:text-pink-400"
             >

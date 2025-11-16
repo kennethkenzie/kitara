@@ -1,22 +1,94 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Heart, Share2, SkipForward } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Heart, Share2, Loader2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { shows, generateEpisodes, user } from '../mockData';
+import { showsAPI, historyAPI } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 import { toast } from '../hooks/use-toast';
 
 const VideoPlayer = () => {
   const { showId, episodeNumber } = useParams();
   const navigate = useNavigate();
-  const show = shows.find((s) => s.id === parseInt(showId));
-  const episodes = show ? generateEpisodes(show.id, show.episodes) : [];
-  const currentEpisode = episodes.find((ep) => ep.episodeNumber === parseInt(episodeNumber));
+  const { user, profile } = useAuth();
+  const [show, setShow] = useState(null);
+  const [episodes, setEpisodes] = useState([]);
+  const [currentEpisode, setCurrentEpisode] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
+
+  useEffect(() => {
+    fetchData();
+  }, [showId, episodeNumber]);
 
   useEffect(() => {
     // Scroll to top when episode changes
     window.scrollTo(0, 0);
-  }, [episodeNumber]);
+    
+    // Track watch history
+    if (user && showId && episodeNumber) {
+      trackWatchHistory();
+    }
+  }, [episodeNumber, user]);
+
+  const fetchData = async () => {
+    try {
+      const [showData, episodesData] = await Promise.all([
+        showsAPI.getById(showId),
+        showsAPI.getEpisodes(showId),
+      ]);
+      setShow(showData);
+      setEpisodes(episodesData);
+      const episode = episodesData.find(ep => ep.episode_number === parseInt(episodeNumber));
+      setCurrentEpisode(episode);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load video',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const trackWatchHistory = async () => {
+    try {
+      await historyAPI.add(showId, parseInt(episodeNumber));
+    } catch (error) {
+      console.error('Error tracking watch history:', error);
+    }
+  };
+
+  const handleNextEpisode = () => {
+    const nextEp = episodes.find(ep => ep.episode_number === currentEpisode.episode_number + 1);
+    if (nextEp) {
+      if (nextEp.is_locked && (!profile || profile.coins < nextEp.coins_required)) {
+        toast({
+          title: 'Insufficient Coins',
+          description: `You need ${nextEp.coins_required} coins to unlock this episode.`,
+          variant: 'destructive',
+        });
+        return;
+      }
+      navigate(`/player/${showId}/${nextEp.episode_number}`);
+    }
+  };
+
+  const handlePrevEpisode = () => {
+    const prevEp = episodes.find(ep => ep.episode_number === currentEpisode.episode_number - 1);
+    if (prevEp) {
+      navigate(`/player/${showId}/${prevEp.episode_number}`);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <Loader2 className="w-12 h-12 text-pink-500 animate-spin" />
+      </div>
+    );
+  }
 
   if (!show || !currentEpisode) {
     return (
@@ -26,28 +98,8 @@ const VideoPlayer = () => {
     );
   }
 
-  const nextEpisode = episodes.find((ep) => ep.episodeNumber === currentEpisode.episodeNumber + 1);
-  const prevEpisode = episodes.find((ep) => ep.episodeNumber === currentEpisode.episodeNumber - 1);
-
-  const handleNextEpisode = () => {
-    if (nextEpisode) {
-      if (nextEpisode.isLocked && user.coins < nextEpisode.coinsRequired) {
-        toast({
-          title: 'Insufficient Coins',
-          description: `You need ${nextEpisode.coinsRequired} coins to unlock this episode.`,
-          variant: 'destructive',
-        });
-        return;
-      }
-      navigate(`/player/${showId}/${nextEpisode.episodeNumber}`);
-    }
-  };
-
-  const handlePrevEpisode = () => {
-    if (prevEpisode) {
-      navigate(`/player/${showId}/${prevEpisode.episodeNumber}`);
-    }
-  };
+  const nextEpisode = episodes.find(ep => ep.episode_number === currentEpisode.episode_number + 1);
+  const prevEpisode = episodes.find(ep => ep.episode_number === currentEpisode.episode_number - 1);
 
   return (
     <div className="min-h-screen bg-black">
@@ -77,7 +129,7 @@ const VideoPlayer = () => {
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-white mb-2">{show.title}</h1>
             <p className="text-xl text-gray-300 mb-3">
-              Episode {currentEpisode.episodeNumber}: {currentEpisode.title}
+              Episode {currentEpisode.episode_number}: {currentEpisode.title}
             </p>
             <p className="text-gray-400">{show.description}</p>
           </div>
@@ -138,9 +190,9 @@ const VideoPlayer = () => {
             {episodes.slice(0, 8).map((episode) => (
               <div
                 key={episode.id}
-                onClick={() => navigate(`/player/${showId}/${episode.episodeNumber}`)}
+                onClick={() => navigate(`/player/${showId}/${episode.episode_number}`)}
                 className={`group relative bg-gray-900 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-pink-500 transition-all ${
-                  episode.episodeNumber === currentEpisode.episodeNumber ? 'ring-2 ring-pink-500' : ''
+                  episode.episode_number === currentEpisode.episode_number ? 'ring-2 ring-pink-500' : ''
                 }`}
               >
                 <div className="relative aspect-video bg-gray-800">
@@ -149,7 +201,7 @@ const VideoPlayer = () => {
                     alt={episode.title}
                     className="w-full h-full object-cover"
                   />
-                  {episode.episodeNumber === currentEpisode.episodeNumber && (
+                  {episode.episode_number === currentEpisode.episode_number && (
                     <div className="absolute inset-0 bg-pink-500/20 flex items-center justify-center">
                       <span className="bg-pink-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
                         Now Playing
@@ -158,7 +210,7 @@ const VideoPlayer = () => {
                   )}
                 </div>
                 <div className="p-2">
-                  <p className="text-white text-sm font-semibold">Episode {episode.episodeNumber}</p>
+                  <p className="text-white text-sm font-semibold">Episode {episode.episode_number}</p>
                 </div>
               </div>
             ))}
