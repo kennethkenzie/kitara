@@ -117,7 +117,11 @@ const Search = () => {
           <h2 className="text-xl text-gray-300 mb-6">
             {searchResults.length} results for "{searchQuery}"
           </h2>
-          {searchResults.length > 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="w-12 h-12 text-pink-500 animate-spin" />
+            </div>
+          ) : searchResults.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
               {searchResults.map((show) => (
                 <ShowCard key={show.id} show={show} />
