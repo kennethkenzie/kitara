@@ -3,6 +3,7 @@ import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/AdminRoute";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Categories from "./pages/Categories";
@@ -15,6 +16,10 @@ import Profile from "./pages/Profile";
 import Fandom from "./pages/Fandom";
 import Brand from "./pages/Brand";
 import Auth from "./pages/Auth";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import ShowsManagement from "./pages/admin/ShowsManagement";
+import ShowForm from "./pages/admin/ShowForm";
+import UsersManagement from "./pages/admin/UsersManagement";
 import { Toaster } from "./components/ui/toaster";
 
 function App() {
@@ -52,6 +57,33 @@ function App() {
               <ProtectedRoute>
                 <Profile />
               </ProtectedRoute>
+            } />
+
+            {/* Admin Routes - Require Admin Role */}
+            <Route path="/admin" element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            } />
+            <Route path="/admin/shows" element={
+              <AdminRoute>
+                <ShowsManagement />
+              </AdminRoute>
+            } />
+            <Route path="/admin/shows/new" element={
+              <AdminRoute>
+                <ShowForm />
+              </AdminRoute>
+            } />
+            <Route path="/admin/shows/:id/edit" element={
+              <AdminRoute>
+                <ShowForm />
+              </AdminRoute>
+            } />
+            <Route path="/admin/users" element={
+              <AdminRoute>
+                <UsersManagement />
+              </AdminRoute>
             } />
           </Routes>
           <Toaster />
