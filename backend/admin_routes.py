@@ -48,7 +48,7 @@ class EpisodeUpdate(BaseModel):
     coins_required: Optional[int] = None
 
 class UserUpdate(BaseModel):
-    coins: Optional[int] = None
+    subscription_type: Optional[str] = None
     is_admin: Optional[bool] = None
 
 # Dashboard Stats
