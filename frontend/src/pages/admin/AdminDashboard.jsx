@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Button } from '../../components/ui/button';
 import { adminStatsAPI } from '../../services/adminAPI';
 import { toast } from '../../hooks/use-toast';
+import AdminLayout from '../../layouts/AdminLayout';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -271,7 +272,7 @@ const AdminDashboard = () => {
           </Card>
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 };
 
