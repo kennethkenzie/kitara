@@ -168,7 +168,7 @@ const ShowsManagementImproved = () => {
       show.views,
     ]);
 
-    const csv = [headers, ...rows].map((row) => row.join(',')).join('\\n');
+    const csv = [headers, ...rows].map((row) => row.join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -372,7 +372,9 @@ const ShowsManagementImproved = () => {
           ))}
 
           {filteredShows.length === 0 && (
-            <div className=\"text-center py-12\">\n              <p className=\"text-gray-400\">No shows found</p>\n            </div>
+            <div className="text-center py-12">
+              <p className="text-gray-400">No shows found</p>
+            </div>
           )}
         </div>
       </div>
