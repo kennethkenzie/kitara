@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Download, History, ChevronDown, User, LogOut, Settings, Heart } from 'lucide-react';
+import { Search, Download, History, ChevronDown, User, LogOut, Settings, Heart, Menu, X } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,27 +14,34 @@ import { useAuth } from '../contexts/AuthContext';
 
 const Navbar = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { user, profile, signOut } = useAuth();
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleNavClick = (path) => {
+    navigate(path);
+    setIsMobileMenuOpen(false);
   };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-sm border-b border-gray-800">
-      <div className="max-w-[1920px] mx-auto px-6 py-3 flex items-center justify-between">
+      <div className="max-w-[1920px] mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 group">
-          <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-rose-600 rounded-lg flex items-center justify-center font-bold text-white text-xl transition-transform group-hover:scale-105">
-            K
+          <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-pink-500 to-rose-600 rounded-lg flex items-center justify-center font-bold text-white text-lg md:text-xl transition-transform group-hover:scale-105">
+            E
           </div>
-          <span className="text-2xl font-bold text-white">Kitara Cinema</span>
+          <span className="text-xl md:text-2xl font-bold text-white">Ekitara Cinema</span>
         </Link>
 
-        {/* Navigation Links */}
-        <div className="flex items-center gap-8">
+        {/* Desktop Navigation Links */}
+        <div className="hidden lg:flex items-center gap-6 xl:gap-8">
           <Link
             to="/"
             className="text-pink-500 font-semibold hover:text-pink-400 transition-colors"
@@ -69,21 +76,21 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Right Side Actions */}
-        <div className="flex items-center gap-4">
+        {/* Right Side Actions - Desktop */}
+        <div className="hidden md:flex items-center gap-3 lg:gap-4">
           {/* Search */}
           <button
             onClick={() => navigate('/search')}
             className="flex flex-col items-center gap-1 text-gray-300 hover:text-white transition-colors group"
           >
             <Search className="w-5 h-5" />
-            <span className="text-xs">Search</span>
+            <span className="text-xs hidden xl:block">Search</span>
           </button>
 
           {/* Download */}
           <button className="flex flex-col items-center gap-1 text-gray-300 hover:text-white transition-colors group">
             <Download className="w-5 h-5" />
-            <span className="text-xs">Download</span>
+            <span className="text-xs hidden xl:block">Download</span>
           </button>
 
           {/* History */}
@@ -92,14 +99,14 @@ const Navbar = () => {
             className="flex flex-col items-center gap-1 text-gray-300 hover:text-white transition-colors group"
           >
             <History className="w-5 h-5" />
-            <span className="text-xs">History</span>
+            <span className="text-xs hidden xl:block">History</span>
           </button>
 
           {/* Language Selector */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-1 text-gray-300 hover:text-white transition-colors">
-                <span className="text-sm">English</span>
+                <span className="text-sm">EN</span>
                 <ChevronDown className="w-4 h-4" />
               </button>
             </DropdownMenuTrigger>
@@ -154,13 +161,117 @@ const Navbar = () => {
           ) : (
             <Button
               onClick={() => navigate('/auth')}
-              className="bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white"
+              className="bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white text-sm px-4"
             >
               Sign In
             </Button>
           )}
         </div>
+
+        {/* Mobile Menu Button */}
+        <div className="flex md:hidden items-center gap-2">
+          {user && profile ? (
+            <Avatar className="w-8 h-8 border-2 border-pink-500" onClick={() => navigate('/profile')}>
+              <AvatarImage src={profile.avatar} />
+              <AvatarFallback className="bg-pink-500 text-white text-sm">
+                {profile.name?.charAt(0) || 'U'}
+              </AvatarFallback>
+            </Avatar>
+          ) : (
+            <Button
+              onClick={() => navigate('/auth')}
+              className="bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white text-sm px-3 py-1"
+            >
+              Sign In
+            </Button>
+          )}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="text-white p-2"
+          >
+            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden bg-black/98 border-t border-gray-800">
+          <div className="px-4 py-4 space-y-4">
+            <Link
+              to="/"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block text-pink-500 font-semibold hover:text-pink-400 transition-colors py-2"
+            >
+              Home
+            </Link>
+            <Link
+              to="/categories"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block text-gray-300 hover:text-white transition-colors py-2"
+            >
+              Categories
+            </Link>
+            <Link
+              to="/fandom"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block text-gray-300 hover:text-white transition-colors py-2"
+            >
+              Fandom
+            </Link>
+            <Link
+              to="/brand"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block text-gray-300 hover:text-white transition-colors py-2"
+            >
+              Brand
+            </Link>
+            {profile?.is_admin && (
+              <Link
+                to="/admin"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block text-yellow-400 font-semibold hover:text-yellow-300 transition-colors py-2"
+              >
+                Admin
+              </Link>
+            )}
+            <div className="border-t border-gray-800 pt-4 space-y-4">
+              <button
+                onClick={() => handleNavClick('/search')}
+                className="flex items-center gap-3 text-gray-300 hover:text-white transition-colors py-2 w-full"
+              >
+                <Search className="w-5 h-5" />
+                <span>Search</span>
+              </button>
+              <button
+                onClick={() => handleNavClick('/history')}
+                className="flex items-center gap-3 text-gray-300 hover:text-white transition-colors py-2 w-full"
+              >
+                <History className="w-5 h-5" />
+                <span>History</span>
+              </button>
+              {user && profile && (
+                <>
+                  <button
+                    onClick={() => handleNavClick('/watchlist')}
+                    className="flex items-center gap-3 text-gray-300 hover:text-white transition-colors py-2 w-full"
+                  >
+                    <Heart className="w-5 h-5" />
+                    <span>My Watchlist</span>
+                  </button>
+                  <button
+                    onClick={handleSignOut}
+                    className="flex items-center gap-3 text-pink-500 hover:text-pink-400 transition-colors py-2 w-full"
+                  >
+                    <LogOut className="w-5 h-5" />
+                    <span>Sign Out</span>
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
