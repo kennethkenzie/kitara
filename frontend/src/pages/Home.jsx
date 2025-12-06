@@ -229,32 +229,102 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Mobile Grid View - Only on Mobile */}
-      <div className="md:hidden pt-20 px-4 pb-4">
-        <h2 className="text-xl font-bold text-white mb-4">Featured Shows</h2>
-        <div className="grid grid-cols-2 gap-3">
-          {shows.slice(0, 12).map((show) => (
-            <div 
-              key={show.id}
-              onClick={() => navigate(`/show/${show.id}`)}
-              className="relative rounded-lg overflow-hidden cursor-pointer group"
-            >
-              <img
-                src={show.thumbnail}
-                alt={show.title}
-                className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-              {show.is_exclusive && (
-                <div className="absolute top-2 right-2 bg-pink-500 text-white text-xs px-2 py-1 rounded-full font-bold">
-                  Hot
+      {/* Mobile View - Only on Mobile */}
+      <div className="md:hidden pt-16 pb-20">
+        {/* Search Bar */}
+        <div className="px-4 pt-4 pb-3 bg-black sticky top-16 z-40">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search dramas..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-gray-900 border border-gray-800 rounded-full py-2 pl-10 pr-4 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-pink-500"
+            />
+          </div>
+        </div>
+
+        {/* Category Tabs */}
+        <div className="px-4 pb-3 bg-black sticky top-32 z-40">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+            {mobileCategories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`px-4 py-1.5 rounded-full text-sm font-semibold whitespace-nowrap transition-colors ${
+                  selectedCategory === cat.id
+                    ? 'bg-pink-500 text-white'
+                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Filter Tabs */}
+        <div className="px-4 pb-4 bg-black sticky top-48 z-40">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+            {mobileFilters.map((filter) => (
+              <button
+                key={filter.id}
+                onClick={() => setSelectedFilter(filter.id)}
+                className={`px-4 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors border ${
+                  selectedFilter === filter.id
+                    ? 'bg-pink-500/20 border-pink-500 text-pink-400'
+                    : 'bg-transparent border-gray-700 text-gray-400 hover:border-gray-600'
+                }`}
+              >
+                {filter.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Movie Cards Grid */}
+        <div className="px-4">
+          <div className="grid grid-cols-2 gap-3">
+            {getFilteredShows().map((show) => (
+              <div 
+                key={show.id}
+                onClick={() => navigate(`/show/${show.id}`)}
+                className="relative rounded-lg overflow-hidden cursor-pointer group bg-gray-900"
+              >
+                <div className="relative">
+                  <img
+                    src={show.thumbnail}
+                    alt={show.title}
+                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  {show.is_exclusive && (
+                    <div className="absolute top-2 right-2 bg-pink-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                      Hot
+                    </div>
+                  )}
+                  <div className="absolute top-2 left-2 bg-black/70 text-yellow-400 text-xs px-2 py-0.5 rounded flex items-center gap-1">
+                    <span>★</span>
+                    <span>{show.rating}</span>
+                  </div>
                 </div>
-              )}
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-3">
-                <h3 className="text-white font-semibold text-sm line-clamp-2">{show.title}</h3>
-                <p className="text-gray-300 text-xs mt-1">{show.category}</p>
+                <div className="p-2">
+                  <h3 className="text-white font-semibold text-sm line-clamp-1 mb-1">{show.title}</h3>
+                  <p className="text-gray-400 text-xs line-clamp-2 mb-2">{show.description}</p>
+                  <div className="flex items-center justify-between text-xs text-gray-500">
+                    <span>{show.category}</span>
+                    <span>{show.total_episodes} Eps</span>
+                  </div>
+                </div>
               </div>
+            ))}
+          </div>
+          
+          {getFilteredShows().length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-gray-400 text-sm">No shows found</p>
             </div>
-          ))}
+          )}
         </div>
       </div>
 
