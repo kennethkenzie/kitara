@@ -29,18 +29,32 @@ class SubscriptionRequest(BaseModel):
 @payment_router.get("/episode/{episode_id}/access")
 async def check_episode_access(episode_id: str, user = Depends(get_current_user)):
     try:
-        # Check using the database function
-        result = supabase.rpc('user_has_episode_access', {
-            'p_user_id': user.id,
-            'p_episode_id': episode_id
-        }).execute()
+        # Check if episode is not locked
+        query = "SELECT is_locked FROM episodes WHERE id = %s"
+        episode = execute_query(query, (episode_id,), fetch_one=True)
         
-        has_access = result.data if result.data is not None else False
+        if not episode:
+            raise HTTPException(status_code=404, detail="Episode not found")
+        
+        # If not locked, user has access
+        if not episode['is_locked']:
+            return {
+                "has_access": True,
+                "episode_id": episode_id
+            }
+        
+        # Check if user has purchased
+        purchase_query = "SELECT id FROM transactions WHERE user_id = %s AND external_reference = %s AND status = 'completed'"
+        purchase = execute_query(purchase_query, (user.id, episode_id), fetch_one=True)
+        
+        has_access = purchase is not None
         
         return {
             "has_access": has_access,
             "episode_id": episode_id
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error checking episode access: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -50,16 +64,19 @@ async def check_episode_access(episode_id: str, user = Depends(get_current_user)
 async def initiate_episode_payment(request: InitiatePaymentRequest, user = Depends(get_current_user)):
     try:
         # Get episode details
-        episode = supabase.table('episodes').select('*').eq('id', request.episode_id).single().execute()
-        if not episode.data:
+        query = "SELECT * FROM episodes WHERE id = %s"
+        episode = execute_query(query, (request.episode_id,), fetch_one=True)
+        
+        if not episode:
             raise HTTPException(status_code=404, detail="Episode not found")
         
-        episode_data = episode.data
-        amount = episode_data.get('price_ugx', 200)
+        amount = 2000  # 2000 UGX as default
         
         # Check if already purchased
-        existing_purchase = supabase.table('user_episode_purchases').select('id').eq('user_id', user.id).eq('episode_id', request.episode_id).execute()
-        if existing_purchase.data:
+        purchase_query = "SELECT id FROM transactions WHERE user_id = %s AND external_reference = %s AND status = 'completed'"
+        existing_purchase = execute_query(purchase_query, (user.id, request.episode_id), fetch_one=True)
+        
+        if existing_purchase:
             return {
                 "success": False,
                 "message": "Episode already purchased"
