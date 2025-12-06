@@ -110,10 +110,10 @@ const Home = () => {
                 <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
                   {featuredShow.title}
                 </h1>
-                <p className="text-lg text-gray-300">
+                <p className="text-sm md:text-base lg:text-lg text-gray-300">
                   {featuredShow.description}
                 </p>
-                <div className="flex items-center gap-4 text-sm text-gray-300">
+                <div className="flex items-center gap-2 md:gap-4 text-xs md:text-sm text-gray-300">
                   <span className="flex items-center gap-1">
                     <span className="text-yellow-400">★</span> {featuredShow.rating}
                   </span>
@@ -125,9 +125,9 @@ const Home = () => {
                 <Button
                   onClick={() => navigate(`/show/${featuredShow.id}`)}
                   size="lg"
-                  className="bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-semibold px-8 py-6 text-lg rounded-full transition-all hover:scale-105"
+                  className="bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-semibold px-4 md:px-6 lg:px-8 py-3 md:py-4 lg:py-6 text-sm md:text-base lg:text-lg rounded-full transition-all hover:scale-105"
                 >
-                  <Play className="w-6 h-6 mr-2 fill-white" />
+                  <Play className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 mr-1 md:mr-2 fill-white" />
                   Play Now
                 </Button>
               </div>
@@ -172,9 +172,9 @@ const Home = () => {
       {/* Content Sections */}
       <div className="pb-20">
         {categoryGroups.map((group, idx) => (
-          <div key={idx} className="mt-12 px-12">
+          <div key={idx} className="mt-8 md:mt-12 px-4 md:px-8 lg:px-12">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-white">{group.title}</h2>
+              <h2 className="text-xl md:text-2xl font-bold text-white">{group.title}</h2>
               <button
                 onClick={() => navigate('/categories')}
                 className="text-pink-500 hover:text-pink-400 flex items-center gap-1 text-sm font-semibold transition-colors"
