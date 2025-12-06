@@ -88,8 +88,9 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-black pt-16 md:pt-24 px-4 md:px-8 lg:px-12 pb-20">
-      <div className="max-w-7xl mx-auto">
+    <AdminLayout>
+      <div className="px-4 md:px-8 lg:px-12 py-6 md:py-8">
+        <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 md:mb-8 gap-4">
           <div>
