@@ -8,6 +8,8 @@ import MobileFeed from './MobileFeed';
 
 const Home = () => {
   const navigate = useNavigate();
+  
+  // All hooks MUST be at the top - no conditional hooks!
   const [shows, setShows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [featuredShows, setFeaturedShows] = useState([]);
@@ -16,6 +18,7 @@ const Home = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedFilter, setSelectedFilter] = useState('popular');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
 
   const scrollContainerRef = useRef({});
 
@@ -138,6 +141,7 @@ const Home = () => {
     { title: 'New Releases', shows: shows.slice(0, 8) },
   ];
 
+  // Handle loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -146,19 +150,7 @@ const Home = () => {
     );
   }
 
-  // Check if on mobile - do this at the top level, not conditionally
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Render mobile feed for mobile devices - don't return early, render conditionally
+  // Render mobile feed for mobile devices
   if (isMobile) {
     return <MobileFeed />;
   }
