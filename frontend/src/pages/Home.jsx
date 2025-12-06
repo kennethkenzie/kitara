@@ -86,8 +86,8 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-black">
-      {/* Hero Carousel Section with Fade */}
-      <div className="relative h-[400px] md:h-[500px] lg:h-[600px] w-full overflow-hidden group">
+      {/* Hero Carousel Section - Hidden on Mobile */}
+      <div className="hidden md:block relative h-[500px] lg:h-[600px] w-full overflow-hidden group">
         {featuredShows.map((featuredShow, index) => (
           <div
             key={index}
@@ -105,15 +105,15 @@ const Home = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
             </div>
 
-            <div className="relative h-full max-w-7xl mx-auto px-4 md:px-8 lg:px-12 flex items-center">
-              <div className="max-w-xl space-y-3 md:space-y-6">
-                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
+            <div className="relative h-full max-w-7xl mx-auto px-8 lg:px-12 flex items-center">
+              <div className="max-w-xl space-y-6">
+                <h1 className="text-4xl lg:text-5xl font-bold text-white leading-tight">
                   {featuredShow.title}
                 </h1>
-                <p className="text-sm md:text-base lg:text-lg text-gray-300">
+                <p className="text-base lg:text-lg text-gray-300">
                   {featuredShow.description}
                 </p>
-                <div className="flex items-center gap-2 md:gap-4 text-xs md:text-sm text-gray-300">
+                <div className="flex items-center gap-4 text-sm text-gray-300">
                   <span className="flex items-center gap-1">
                     <span className="text-yellow-400">★</span> {featuredShow.rating}
                   </span>
@@ -125,9 +125,9 @@ const Home = () => {
                 <Button
                   onClick={() => navigate(`/show/${featuredShow.id}`)}
                   size="lg"
-                  className="bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-semibold px-4 md:px-6 lg:px-8 py-3 md:py-4 lg:py-6 text-sm md:text-base lg:text-lg rounded-full transition-all hover:scale-105"
+                  className="bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-semibold px-6 lg:px-8 py-4 lg:py-6 text-base lg:text-lg rounded-full transition-all hover:scale-105"
                 >
-                  <Play className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 mr-1 md:mr-2 fill-white" />
+                  <Play className="w-5 h-5 lg:w-6 lg:h-6 mr-2 fill-white" />
                   Play Now
                 </Button>
               </div>
@@ -165,6 +165,35 @@ const Home = () => {
                   : 'w-2 bg-white/50 hover:bg-white/75'
               }`}
             />
+          ))}
+        </div>
+      </div>
+
+      {/* Mobile Grid View - Only on Mobile */}
+      <div className="md:hidden pt-20 px-4 pb-4">
+        <h2 className="text-xl font-bold text-white mb-4">Featured Shows</h2>
+        <div className="grid grid-cols-2 gap-3">
+          {shows.slice(0, 12).map((show) => (
+            <div 
+              key={show.id}
+              onClick={() => navigate(`/show/${show.id}`)}
+              className="relative rounded-lg overflow-hidden cursor-pointer group"
+            >
+              <img
+                src={show.thumbnail}
+                alt={show.title}
+                className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              {show.is_exclusive && (
+                <div className="absolute top-2 right-2 bg-pink-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                  Hot
+                </div>
+              )}
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-3">
+                <h3 className="text-white font-semibold text-sm line-clamp-2">{show.title}</h3>
+                <p className="text-gray-300 text-xs mt-1">{show.category}</p>
+              </div>
+            </div>
           ))}
         </div>
       </div>
