@@ -1,6 +1,6 @@
 import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play, ChevronRight, ChevronLeft, Loader2 } from 'lucide-react';
+import { Play, ChevronRight, ChevronLeft, Loader2, Search } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import ShowCard from '../components/ShowCard';
 import { showsAPI } from '../services/api';
@@ -12,8 +12,68 @@ const Home = () => {
   const [featuredShows, setFeaturedShows] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedFilter, setSelectedFilter] = useState('popular');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const scrollContainerRef = useRef({});
+
+  // Categories for mobile
+  const mobileCategories = [
+    { id: 'all', name: 'All' },
+    { id: 'Drama', name: 'Drama' },
+    { id: 'Fantasy', name: 'Novel' },
+    { id: 'Action', name: 'Anime' },
+    { id: 'Comedy', name: 'Comedy' },
+    { id: 'Mystery', name: 'Mystery' },
+    { id: 'Horror', name: 'Horror' },
+  ];
+
+  // Filters for mobile
+  const mobileFilters = [
+    { id: 'popular', name: 'Popular' },
+    { id: 'coming-soon', name: 'Coming Soon' },
+    { id: 'new', name: 'New' },
+    { id: 'exclusive', name: 'Exclusive' },
+  ];
+
+  // Filter shows based on selected category and filter
+  const getFilteredShows = () => {
+    let filtered = shows;
+
+    // Apply category filter
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(show => show.category === selectedCategory);
+    }
+
+    // Apply search filter
+    if (searchQuery) {
+      filtered = filtered.filter(show => 
+        show.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Apply filter
+    switch (selectedFilter) {
+      case 'popular':
+        filtered = filtered.filter(s => s.views.includes('M'));
+        break;
+      case 'new':
+        filtered = filtered.slice(0, 12);
+        break;
+      case 'exclusive':
+        filtered = filtered.filter(s => s.is_exclusive);
+        break;
+      case 'coming-soon':
+        // For demo purposes, show some shows
+        filtered = filtered.slice(5, 15);
+        break;
+      default:
+        break;
+    }
+
+    return filtered;
+  };
 
   // Auto-advance carousel with fade
   useEffect(() => {
