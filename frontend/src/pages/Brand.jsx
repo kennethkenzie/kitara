@@ -79,7 +79,7 @@ const Brand = () => {
               Ekitara Cinema is a next-generation streaming platform that delivers premium short-form dramatic content. Our mission is to revolutionize how people consume entertainment by offering bite-sized episodes that fit perfectly into modern lifestyles.
             </p>
             <p>
-              With a focus on high-quality storytelling, diverse genres, and engaging narratives, Kitara Cinema has become the go-to platform for millions of viewers seeking quick entertainment that doesn't compromise on quality.
+              With a focus on high-quality storytelling, diverse genres, and engaging narratives, Ekitara Cinema has become the go-to platform for millions of viewers seeking quick entertainment that doesn't compromise on quality.
             </p>
             <p>
               Our innovative coin-based system allows viewers to unlock premium content while supporting creators, fostering a sustainable ecosystem for digital entertainment.
@@ -112,7 +112,7 @@ const Brand = () => {
           <CardContent className="p-12">
             <h2 className="text-4xl font-bold text-white mb-4">Partner With Us</h2>
             <p className="text-white/90 text-lg mb-6 max-w-2xl mx-auto">
-              Join the Kitara Cinema family and reach millions of engaged viewers. We're always looking for innovative content creators and strategic partners.
+              Join the Ekitara Cinema family and reach millions of engaged viewers. We're always looking for innovative content creators and strategic partners.
             </p>
             <Button
               size="lg"
