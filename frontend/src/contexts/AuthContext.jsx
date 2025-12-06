@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import axios from 'axios';
 
 const AuthContext = createContext({});
 
@@ -11,6 +11,9 @@ export const useAuth = () => {
   return context;
 };
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -18,35 +21,24 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      } else {
+    // Check for stored session on mount
+    const storedSession = localStorage.getItem('session');
+    if (storedSession) {
+      try {
+        const parsedSession = JSON.parse(storedSession);
+        setSession(parsedSession);
+        fetchProfile(parsedSession.access_token);
+      } catch (error) {
+        console.error('Error parsing stored session:', error);
+        localStorage.removeItem('session');
         setLoading(false);
       }
-    });
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      } else {
-        setProfile(null);
-        setLoading(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    } else {
+      setLoading(false);
+    }
   }, []);
 
-  const fetchProfile = async (userId) => {
+  const fetchProfile = async (token) => {
     try {
       const { data, error } = await supabase
         .from('users')
