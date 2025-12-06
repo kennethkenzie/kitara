@@ -96,9 +96,36 @@ async def get_recent_activity(limit: int = 20, admin = Depends(get_admin_user)):
 @admin_router.post("/shows")
 async def create_show(show: ShowCreate, admin = Depends(get_admin_user)):
     try:
-        response = supabase.table('shows').insert(show.dict()).execute()
-        await log_admin_action(admin.id, "CREATE", "show", response.data[0]['id'], show.dict())
-        return response.data[0]
+        query = """
+            INSERT INTO shows (title, thumbnail, category, rating, views, total_episodes, 
+                             is_exclusive, description, duration, is_featured)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING *
+        """
+        show_data = show.dict()
+        result = execute_query(
+            query,
+            (show_data['title'], show_data['thumbnail'], show_data['category'], 
+             show_data['rating'], show_data['views'], show_data['total_episodes'],
+             show_data['is_exclusive'], show_data['description'], 
+             show_data['duration'], show_data['is_featured']),
+            fetch_one=True
+        )
+        await log_admin_action(admin.id, "CREATE", "show", str(result['id']), show_data)
+        
+        return {
+            "id": str(result['id']),
+            "title": result['title'],
+            "thumbnail": result['thumbnail'],
+            "category": result['category'],
+            "rating": float(result['rating']),
+            "views": result['views'],
+            "total_episodes": result['total_episodes'],
+            "is_exclusive": result['is_exclusive'],
+            "description": result['description'],
+            "duration": result['duration'],
+            "is_featured": result['is_featured']
+        }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -106,16 +133,47 @@ async def create_show(show: ShowCreate, admin = Depends(get_admin_user)):
 async def update_show(show_id: str, show: ShowUpdate, admin = Depends(get_admin_user)):
     try:
         update_data = {k: v for k, v in show.dict().items() if v is not None}
-        response = supabase.table('shows').update(update_data).eq('id', show_id).execute()
+        
+        if not update_data:
+            raise HTTPException(status_code=400, detail="No fields to update")
+        
+        set_clause = ", ".join([f"{k} = %s" for k in update_data.keys()])
+        query = f"UPDATE shows SET {set_clause} WHERE id = %s RETURNING *"
+        
+        result = execute_query(
+            query,
+            tuple(list(update_data.values()) + [show_id]),
+            fetch_one=True
+        )
+        
+        if not result:
+            raise HTTPException(status_code=404, detail="Show not found")
+        
         await log_admin_action(admin.id, "UPDATE", "show", show_id, update_data)
-        return response.data[0]
+        
+        return {
+            "id": str(result['id']),
+            "title": result['title'],
+            "thumbnail": result['thumbnail'],
+            "category": result['category'],
+            "rating": float(result['rating']),
+            "views": result['views'],
+            "total_episodes": result['total_episodes'],
+            "is_exclusive": result['is_exclusive'],
+            "description": result['description'],
+            "duration": result['duration'],
+            "is_featured": result['is_featured']
+        }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 @admin_router.delete("/shows/{show_id}")
 async def delete_show(show_id: str, admin = Depends(get_admin_user)):
     try:
-        response = supabase.table('shows').delete().eq('id', show_id).execute()
+        query = "DELETE FROM shows WHERE id = %s"
+        execute_query(query, (show_id,), fetch_all=False)
         await log_admin_action(admin.id, "DELETE", "show", show_id)
         return {"message": "Show deleted successfully"}
     except Exception as e:
