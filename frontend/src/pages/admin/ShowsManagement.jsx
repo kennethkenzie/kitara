@@ -90,8 +90,9 @@ const ShowsManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black pt-24 px-12 pb-20">
-      <div className="max-w-7xl mx-auto">
+    <AdminLayout>
+      <div className="px-4 md:px-8 lg:px-12 py-6 md:py-8">
+        <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
