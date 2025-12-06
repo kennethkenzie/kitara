@@ -6,8 +6,8 @@ import logging
 from pathlib import Path
 from pydantic import BaseModel, EmailStr
 from typing import List, Optional
-from supabase_client import supabase
-from auth import get_current_user
+from db import execute_query
+from auth import get_current_user, hash_password, verify_password, create_access_token
 from admin_routes import admin_router
 from payment_routes import payment_router
 
@@ -79,59 +79,105 @@ class AddWatchHistory(BaseModel):
 @api_router.post("/auth/signup")
 async def signup(request: SignupRequest):
     try:
-        # Sign up user
-        response = supabase.auth.sign_up({
-            "email": request.email,
-            "password": request.password,
-            "options": {
-                "data": {
-                    "name": request.name
-                }
-            }
-        })
+        # Check if user already exists
+        check_query = "SELECT id FROM users WHERE email = %s"
+        existing_user = execute_query(check_query, (request.email,), fetch_one=True)
         
-        if response.user:
-            return {
-                "user": response.user,
-                "session": response.session
+        if existing_user:
+            raise HTTPException(status_code=400, detail="Email already registered")
+        
+        # Hash password and create user
+        hashed_pw = hash_password(request.password)
+        insert_query = """
+            INSERT INTO users (email, password_hash, name, coins)
+            VALUES (%s, %s, %s, %s)
+            RETURNING id, email, name, avatar, coins, created_at
+        """
+        user_data = execute_query(
+            insert_query, 
+            (request.email, hashed_pw, request.name, 150),
+            fetch_one=True
+        )
+        
+        # Create JWT token
+        access_token = create_access_token(str(user_data['id']), user_data['email'])
+        
+        return {
+            "user": {
+                "id": str(user_data['id']),
+                "email": user_data['email'],
+                "name": user_data['name'],
+                "avatar": user_data['avatar'],
+                "coins": user_data['coins']
+            },
+            "session": {
+                "access_token": access_token,
+                "token_type": "bearer"
             }
-        else:
-            raise HTTPException(status_code=400, detail="Signup failed")
+        }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 @api_router.post("/auth/login")
 async def login(request: LoginRequest):
     try:
-        response = supabase.auth.sign_in_with_password({
-            "email": request.email,
-            "password": request.password
-        })
+        # Get user from database
+        query = "SELECT * FROM users WHERE email = %s"
+        user_data = execute_query(query, (request.email,), fetch_one=True)
         
-        if response.user and response.session:
-            return {
-                "user": response.user,
-                "session": response.session
+        if not user_data:
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        
+        # Verify password
+        if not verify_password(request.password, user_data['password_hash']):
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        
+        # Create JWT token
+        access_token = create_access_token(str(user_data['id']), user_data['email'])
+        
+        return {
+            "user": {
+                "id": str(user_data['id']),
+                "email": user_data['email'],
+                "name": user_data['name'],
+                "avatar": user_data['avatar'],
+                "coins": user_data['coins']
+            },
+            "session": {
+                "access_token": access_token,
+                "token_type": "bearer"
             }
-        else:
-            raise HTTPException(status_code=401, detail="Invalid credentials")
+        }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=401, detail=str(e))
 
 @api_router.post("/auth/logout")
 async def logout(user = Depends(get_current_user)):
-    try:
-        supabase.auth.sign_out()
-        return {"message": "Logged out successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    # With JWT, logout is handled client-side by removing the token
+    return {"message": "Logged out successfully"}
 
 @api_router.get("/auth/me")
 async def get_me(user = Depends(get_current_user)):
     try:
-        # Get user profile from users table
-        response = supabase.table('users').select('*').eq('id', user.id).single().execute()
-        return response.data
+        query = "SELECT id, email, name, avatar, coins, created_at FROM users WHERE id = %s"
+        user_data = execute_query(query, (user.id,), fetch_one=True)
+        
+        if not user_data:
+            raise HTTPException(status_code=404, detail="User profile not found")
+        
+        return {
+            "id": str(user_data['id']),
+            "email": user_data['email'],
+            "name": user_data['name'],
+            "avatar": user_data['avatar'],
+            "coins": user_data['coins']
+        }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=404, detail=f"User profile not found: {str(e)}")
 
