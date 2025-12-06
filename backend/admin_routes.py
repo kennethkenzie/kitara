@@ -183,9 +183,30 @@ async def delete_show(show_id: str, admin = Depends(get_admin_user)):
 @admin_router.post("/episodes")
 async def create_episode(episode: EpisodeCreate, admin = Depends(get_admin_user)):
     try:
-        response = supabase.table('episodes').insert(episode.dict()).execute()
-        await log_admin_action(admin.id, "CREATE", "episode", response.data[0]['id'], episode.dict())
-        return response.data[0]
+        query = """
+            INSERT INTO episodes (show_id, episode_number, title, duration, is_locked, thumbnail, coins_required)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            RETURNING *
+        """
+        ep_data = episode.dict()
+        result = execute_query(
+            query,
+            (ep_data['show_id'], ep_data['episode_number'], ep_data['title'],
+             ep_data['duration'], ep_data['is_locked'], ep_data['thumbnail'],
+             ep_data['coins_required']),
+            fetch_one=True
+        )
+        await log_admin_action(admin.id, "CREATE", "episode", str(result['id']), ep_data)
+        return {
+            "id": str(result['id']),
+            "show_id": str(result['show_id']),
+            "episode_number": result['episode_number'],
+            "title": result['title'],
+            "duration": result['duration'],
+            "is_locked": result['is_locked'],
+            "thumbnail": result['thumbnail'],
+            "coins_required": result['coins_required']
+        }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -193,16 +214,42 @@ async def create_episode(episode: EpisodeCreate, admin = Depends(get_admin_user)
 async def update_episode(episode_id: str, episode: EpisodeUpdate, admin = Depends(get_admin_user)):
     try:
         update_data = {k: v for k, v in episode.dict().items() if v is not None}
-        response = supabase.table('episodes').update(update_data).eq('id', episode_id).execute()
+        if not update_data:
+            raise HTTPException(status_code=400, detail="No fields to update")
+        
+        set_clause = ", ".join([f"{k} = %s" for k in update_data.keys()])
+        query = f"UPDATE episodes SET {set_clause} WHERE id = %s RETURNING *"
+        
+        result = execute_query(
+            query,
+            tuple(list(update_data.values()) + [episode_id]),
+            fetch_one=True
+        )
+        
+        if not result:
+            raise HTTPException(status_code=404, detail="Episode not found")
+        
         await log_admin_action(admin.id, "UPDATE", "episode", episode_id, update_data)
-        return response.data[0]
+        return {
+            "id": str(result['id']),
+            "show_id": str(result['show_id']),
+            "episode_number": result['episode_number'],
+            "title": result['title'],
+            "duration": result['duration'],
+            "is_locked": result['is_locked'],
+            "thumbnail": result['thumbnail'],
+            "coins_required": result['coins_required']
+        }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 @admin_router.delete("/episodes/{episode_id}")
 async def delete_episode(episode_id: str, admin = Depends(get_admin_user)):
     try:
-        response = supabase.table('episodes').delete().eq('id', episode_id).execute()
+        query = "DELETE FROM episodes WHERE id = %s"
+        execute_query(query, (episode_id,), fetch_all=False)
         await log_admin_action(admin.id, "DELETE", "episode", episode_id)
         return {"message": "Episode deleted successfully"}
     except Exception as e:
@@ -210,39 +257,86 @@ async def delete_episode(episode_id: str, admin = Depends(get_admin_user)):
 
 # Users Management
 @admin_router.get("/users")
-async def get_all_users(admin = Depends(get_admin_user)):
+async def get_users(admin = Depends(get_admin_user)):
     try:
-        response = supabase.table('users').select('*').order('created_at', desc=True).execute()
-        return response.data
+        query = "SELECT id, email, name, avatar, coins, is_admin, created_at FROM users ORDER BY created_at DESC"
+        users = execute_query(query, fetch_all=True)
+        return [{
+            "id": str(u['id']),
+            "email": u['email'],
+            "name": u['name'],
+            "avatar": u['avatar'],
+            "coins": u['coins'],
+            "is_admin": u['is_admin'],
+            "created_at": str(u['created_at'])
+        } for u in users]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @admin_router.put("/users/{user_id}")
-async def update_user(user_id: str, user_update: UserUpdate, admin = Depends(get_admin_user)):
+async def update_user(user_id: str, user: UserUpdate, admin = Depends(get_admin_user)):
     try:
-        update_data = {k: v for k, v in user_update.dict().items() if v is not None}
-        response = supabase.table('users').update(update_data).eq('id', user_id).execute()
+        update_data = {k: v for k, v in user.dict().items() if v is not None}
+        if not update_data:
+            raise HTTPException(status_code=400, detail="No fields to update")
+        
+        set_clause = ", ".join([f"{k} = %s" for k in update_data.keys()])
+        query = f"UPDATE users SET {set_clause} WHERE id = %s RETURNING id, email, name, avatar, coins, is_admin"
+        
+        result = execute_query(
+            query,
+            tuple(list(update_data.values()) + [user_id]),
+            fetch_one=True
+        )
+        
+        if not result:
+            raise HTTPException(status_code=404, detail="User not found")
+        
         await log_admin_action(admin.id, "UPDATE", "user", user_id, update_data)
-        return response.data[0]
+        return {
+            "id": str(result['id']),
+            "email": result['email'],
+            "name": result['name'],
+            "avatar": result['avatar'],
+            "coins": result['coins'],
+            "is_admin": result['is_admin']
+        }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@admin_router.get("/users/{user_id}/details")
+@admin_router.get("/users/{user_id}")
 async def get_user_details(user_id: str, admin = Depends(get_admin_user)):
     try:
-        # Get user info
-        user = supabase.table('users').select('*').eq('id', user_id).single().execute()
+        user_query = "SELECT id, email, name, avatar, coins, is_admin, created_at FROM users WHERE id = %s"
+        user = execute_query(user_query, (user_id,), fetch_one=True)
         
-        # Get user watchlist
-        watchlist = supabase.table('watchlist').select('*').eq('user_id', user_id).execute()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
         
-        # Get user watch history
-        history = supabase.table('watch_history').select('*').eq('user_id', user_id).execute()
+        watchlist_query = "SELECT COUNT(*) as count FROM watchlist WHERE user_id = %s"
+        watchlist = execute_query(watchlist_query, (user_id,), fetch_one=True)
+        
+        history_query = "SELECT COUNT(*) as count FROM watch_history WHERE user_id = %s"
+        history = execute_query(history_query, (user_id,), fetch_one=True)
         
         return {
-            "user": user.data,
-            "watchlist_count": len(watchlist.data),
-            "watch_history_count": len(history.data)
+            "user": {
+                "id": str(user['id']),
+                "email": user['email'],
+                "name": user['name'],
+                "avatar": user['avatar'],
+                "coins": user['coins'],
+                "is_admin": user['is_admin'],
+                "created_at": str(user['created_at'])
+            },
+            "stats": {
+                "watchlist_count": watchlist['count'],
+                "history_count": history['count']
+            }
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
