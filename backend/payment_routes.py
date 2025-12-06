@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional
-from supabase_client import supabase
+from db import execute_query
 from auth import get_current_user
 from mobile_money import mobile_money_service
 import logging
