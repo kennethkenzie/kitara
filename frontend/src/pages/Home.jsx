@@ -199,9 +199,9 @@ const Home = () => {
       </div>
 
       {/* Content Sections */}
-      <div className="pb-20">
+      <div className="pb-20 md:block">
         {categoryGroups.map((group, idx) => (
-          <div key={idx} className="mt-8 md:mt-12 px-4 md:px-8 lg:px-12">
+          <div key={idx} className="mt-8 md:mt-12 px-4 md:px-8 lg:px-12 hidden md:block">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl md:text-2xl font-bold text-white">{group.title}</h2>
               <button
