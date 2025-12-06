@@ -353,27 +353,73 @@ async def remove_from_watchlist(show_id: str, user = Depends(get_current_user)):
 @api_router.get("/history")
 async def get_watch_history(user = Depends(get_current_user)):
     try:
-        response = supabase.table('watch_history').select('*, shows(*)').eq('user_id', user.id).order('watched_at', desc=True).execute()
-        return response.data
+        query = """
+            SELECT h.id, h.show_id, h.episode_number, h.watched_at,
+                   s.id as show_id, s.title, s.thumbnail, s.category, 
+                   s.rating, s.views, s.total_episodes, s.is_exclusive,
+                   s.description, s.duration, s.is_featured
+            FROM watch_history h
+            JOIN shows s ON h.show_id = s.id
+            WHERE h.user_id = %s
+            ORDER BY h.watched_at DESC
+        """
+        history = execute_query(query, (user.id,), fetch_all=True)
+        
+        result = []
+        for item in history:
+            result.append({
+                "id": str(item['id']),
+                "show_id": str(item['show_id']),
+                "episode_number": item['episode_number'],
+                "watched_at": str(item['watched_at']),
+                "shows": {
+                    "id": str(item['show_id']),
+                    "title": item['title'],
+                    "thumbnail": item['thumbnail'],
+                    "category": item['category'],
+                    "rating": float(item['rating']) if item['rating'] else 0.0,
+                    "views": item['views'],
+                    "total_episodes": item['total_episodes'],
+                    "is_exclusive": item['is_exclusive'],
+                    "description": item['description'],
+                    "duration": item['duration'],
+                    "is_featured": item['is_featured']
+                }
+            })
+        
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.post("/history")
 async def add_watch_history(history: AddWatchHistory, user = Depends(get_current_user)):
     try:
-        response = supabase.table('watch_history').insert({
-            "user_id": user.id,
-            "show_id": history.show_id,
-            "episode_number": history.episode_number
-        }).execute()
-        return response.data
+        query = """
+            INSERT INTO watch_history (user_id, show_id, episode_number)
+            VALUES (%s, %s, %s)
+            RETURNING id, user_id, show_id, episode_number, watched_at
+        """
+        result = execute_query(
+            query, 
+            (user.id, history.show_id, history.episode_number),
+            fetch_one=True
+        )
+        
+        return {
+            "id": str(result['id']),
+            "user_id": str(result['user_id']),
+            "show_id": str(result['show_id']),
+            "episode_number": result['episode_number'],
+            "watched_at": str(result['watched_at'])
+        }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 @api_router.delete("/history")
 async def clear_watch_history(user = Depends(get_current_user)):
     try:
-        response = supabase.table('watch_history').delete().eq('user_id', user.id).execute()
+        query = "DELETE FROM watch_history WHERE user_id = %s"
+        execute_query(query, (user.id,), fetch_all=False)
         return {"message": "Watch history cleared"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -382,16 +428,42 @@ async def clear_watch_history(user = Depends(get_current_user)):
 @api_router.get("/profile")
 async def get_profile(user = Depends(get_current_user)):
     try:
-        response = supabase.table('users').select('*').eq('id', user.id).single().execute()
-        return response.data
+        query = "SELECT id, email, name, avatar, coins, created_at FROM users WHERE id = %s"
+        profile = execute_query(query, (user.id,), fetch_one=True)
+        
+        if not profile:
+            raise HTTPException(status_code=404, detail="Profile not found")
+        
+        return {
+            "id": str(profile['id']),
+            "email": profile['email'],
+            "name": profile['name'],
+            "avatar": profile['avatar'],
+            "coins": profile['coins']
+        }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=404, detail="Profile not found")
 
 @api_router.put("/profile")
 async def update_profile(name: str, user = Depends(get_current_user)):
     try:
-        response = supabase.table('users').update({"name": name}).eq('id', user.id).execute()
-        return response.data
+        query = """
+            UPDATE users 
+            SET name = %s, updated_at = CURRENT_TIMESTAMP 
+            WHERE id = %s
+            RETURNING id, email, name, avatar, coins
+        """
+        result = execute_query(query, (name, user.id), fetch_one=True)
+        
+        return {
+            "id": str(result['id']),
+            "email": result['email'],
+            "name": result['name'],
+            "avatar": result['avatar'],
+            "coins": result['coins']
+        }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -399,12 +471,26 @@ async def update_profile(name: str, user = Depends(get_current_user)):
 async def purchase_coins(amount: int, user = Depends(get_current_user)):
     try:
         # Get current coins
-        profile = supabase.table('users').select('coins').eq('id', user.id).single().execute()
-        current_coins = profile.data['coins']
+        query = "SELECT coins FROM users WHERE id = %s"
+        profile = execute_query(query, (user.id,), fetch_one=True)
+        current_coins = profile['coins']
         
         # Update coins
-        response = supabase.table('users').update({"coins": current_coins + amount}).eq('id', user.id).execute()
-        return response.data
+        update_query = """
+            UPDATE users 
+            SET coins = %s, updated_at = CURRENT_TIMESTAMP 
+            WHERE id = %s
+            RETURNING id, email, name, avatar, coins
+        """
+        result = execute_query(update_query, (current_coins + amount, user.id), fetch_one=True)
+        
+        return {
+            "id": str(result['id']),
+            "email": result['email'],
+            "name": result['name'],
+            "avatar": result['avatar'],
+            "coins": result['coins']
+        }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
