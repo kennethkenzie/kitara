@@ -30,7 +30,7 @@ const Brand = () => {
           <div className="inline-block p-3 bg-pink-500/20 rounded-full mb-4">
             <Sparkles className="w-8 h-8 text-pink-500" />
           </div>
-          <h1 className="text-5xl font-bold text-white mb-4">Kitara Cinema Brand</h1>
+          <h1 className="text-5xl font-bold text-white mb-4">Ekitara Cinema Brand</h1>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
             Revolutionizing short-form entertainment with bite-sized dramatic content that captivates millions of viewers worldwide.
           </p>
@@ -71,12 +71,12 @@ const Brand = () => {
         {/* About */}
         <Card className="bg-gray-900 border-gray-800 mb-16">
           <CardHeader>
-            <CardTitle className="text-white text-3xl">About Kitara Cinema</CardTitle>
+            <CardTitle className="text-white text-3xl">About Ekitara Cinema</CardTitle>
             <CardDescription className="text-gray-400 text-lg">The future of entertainment</CardDescription>
           </CardHeader>
           <CardContent className="text-gray-300 space-y-4">
             <p>
-              Kitara Cinema is a next-generation streaming platform that delivers premium short-form dramatic content. Our mission is to revolutionize how people consume entertainment by offering bite-sized episodes that fit perfectly into modern lifestyles.
+              Ekitara Cinema is a next-generation streaming platform that delivers premium short-form dramatic content. Our mission is to revolutionize how people consume entertainment by offering bite-sized episodes that fit perfectly into modern lifestyles.
             </p>
             <p>
               With a focus on high-quality storytelling, diverse genres, and engaging narratives, Kitara Cinema has become the go-to platform for millions of viewers seeking quick entertainment that doesn't compromise on quality.
