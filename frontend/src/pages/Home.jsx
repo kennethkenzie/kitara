@@ -146,24 +146,20 @@ const Home = () => {
     );
   }
 
-  // Show mobile feed on mobile devices
-  const [showMobileFeed, setShowMobileFeed] = useState(true);
+  // Check if on mobile - do this at the top level, not conditionally
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   
-  // Check if on mobile and should show feed
   useEffect(() => {
-    const isMobile = window.innerWidth < 768;
-    setShowMobileFeed(isMobile);
-    
     const handleResize = () => {
-      setShowMobileFeed(window.innerWidth < 768);
+      setIsMobile(window.innerWidth < 768);
     };
     
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Render mobile feed for mobile devices
-  if (showMobileFeed) {
+  // Render mobile feed for mobile devices - don't return early, render conditionally
+  if (isMobile) {
     return <MobileFeed />;
   }
 
