@@ -87,7 +87,7 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-black">
       {/* Hero Carousel Section with Fade */}
-      <div className="relative h-[600px] w-full overflow-hidden group">
+      <div className="relative h-[400px] md:h-[500px] lg:h-[600px] w-full overflow-hidden group">
         {featuredShows.map((featuredShow, index) => (
           <div
             key={index}
@@ -105,9 +105,9 @@ const Home = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
             </div>
 
-            <div className="relative h-full max-w-7xl mx-auto px-12 flex items-center">
-              <div className="max-w-xl space-y-6">
-                <h1 className="text-5xl font-bold text-white leading-tight">
+            <div className="relative h-full max-w-7xl mx-auto px-4 md:px-8 lg:px-12 flex items-center">
+              <div className="max-w-xl space-y-3 md:space-y-6">
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
                   {featuredShow.title}
                 </h1>
                 <p className="text-lg text-gray-300">
