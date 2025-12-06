@@ -4,6 +4,7 @@ import { Play, ChevronRight, ChevronLeft, Loader2, Search } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import ShowCard from '../components/ShowCard';
 import { showsAPI } from '../services/api';
+import MobileFeed from './MobileFeed';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -142,6 +143,27 @@ const Home = () => {
         <Loader2 className="w-12 h-12 text-pink-500 animate-spin" />
       </div>
     );
+  }
+
+  // Show mobile feed on mobile devices
+  const [showMobileFeed, setShowMobileFeed] = useState(true);
+  
+  // Check if on mobile and should show feed
+  useEffect(() => {
+    const isMobile = window.innerWidth < 768;
+    setShowMobileFeed(isMobile);
+    
+    const handleResize = () => {
+      setShowMobileFeed(window.innerWidth < 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Render mobile feed for mobile devices
+  if (showMobileFeed) {
+    return <MobileFeed />;
   }
 
   return (
