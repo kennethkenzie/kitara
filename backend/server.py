@@ -9,7 +9,7 @@ from typing import List, Optional
 from db import execute_query
 from auth import get_current_user, hash_password, verify_password, create_access_token
 from admin_routes import admin_router
-from payment_routes import payment_router
+# from payment_routes import payment_router  # Temporarily disabled - needs PostgreSQL migration
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -497,7 +497,7 @@ async def purchase_coins(amount: int, user = Depends(get_current_user)):
 # Include the routers in the main app
 app.include_router(api_router)
 api_router.include_router(admin_router)
-api_router.include_router(payment_router)
+# api_router.include_router(payment_router)  # Temporarily disabled - needs PostgreSQL migration
 
 app.add_middleware(
     CORSMiddleware,
