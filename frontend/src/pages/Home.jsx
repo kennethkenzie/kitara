@@ -67,9 +67,12 @@ const Home = () => {
 
   const categoryGroups = [
     { title: 'Trending Now', shows: shows.filter(s => s.views.includes('M')).slice(0, 8) },
-    { title: 'Romance', shows: shows.filter(s => s.category === 'romance') },
-    { title: 'Fantasy & Adventure', shows: shows.filter(s => s.category === 'fantasy') },
-    { title: 'Thriller & Mystery', shows: shows.filter(s => ['thriller', 'mystery'].includes(s.category)) },
+    { title: 'Action', shows: shows.filter(s => s.category === 'Action') },
+    { title: 'Fantasy', shows: shows.filter(s => s.category === 'Fantasy') },
+    { title: 'Mystery', shows: shows.filter(s => s.category === 'Mystery') },
+    { title: 'Drama', shows: shows.filter(s => s.category === 'Drama') },
+    { title: 'Comedy', shows: shows.filter(s => s.category === 'Comedy') },
+    { title: 'Horror', shows: shows.filter(s => s.category === 'Horror') },
     { title: 'New Releases', shows: shows.slice(0, 8) },
   ];
 
