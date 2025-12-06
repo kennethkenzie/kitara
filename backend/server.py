@@ -144,7 +144,8 @@ async def login(request: LoginRequest):
                 "email": user_data['email'],
                 "name": user_data['name'],
                 "avatar": user_data['avatar'],
-                "coins": user_data['coins']
+                "coins": user_data['coins'],
+                "is_admin": user_data.get('is_admin', False)
             },
             "session": {
                 "access_token": access_token,
