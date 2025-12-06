@@ -1,18 +1,26 @@
 import axios from 'axios';
-import { supabase } from '../lib/supabase';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Get auth token
-const getAuthToken = async () => {
-  const { data: { session } } = await supabase.auth.getSession();
-  return session?.access_token;
+// Get auth token from localStorage
+const getAuthToken = () => {
+  const storedSession = localStorage.getItem('session');
+  if (storedSession) {
+    try {
+      const session = JSON.parse(storedSession);
+      return session.access_token;
+    } catch (error) {
+      console.error('Error parsing session:', error);
+      return null;
+    }
+  }
+  return null;
 };
 
 // Create axios instance with auth
-const createAuthenticatedRequest = async () => {
-  const token = await getAuthToken();
+const createAuthenticatedRequest = () => {
+  const token = getAuthToken();
   return axios.create({
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
