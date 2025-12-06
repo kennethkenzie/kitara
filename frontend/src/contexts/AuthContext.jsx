@@ -40,59 +40,78 @@ export const AuthProvider = ({ children }) => {
 
   const fetchProfile = async (token) => {
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) throw error;
-      setProfile(data);
+      const response = await axios.get(`${API}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setProfile(response.data);
+      setUser(response.data);
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching profile:', error);
-    } finally {
+      // If token is invalid, clear session
+      localStorage.removeItem('session');
+      setSession(null);
+      setUser(null);
+      setProfile(null);
       setLoading(false);
     }
   };
 
   const signUp = async (email, password, name) => {
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const response = await axios.post(`${API}/auth/signup`, {
         email,
         password,
-        options: {
-          data: { name },
-        },
+        name
       });
-      if (error) throw error;
-      return { data, error: null };
+      
+      const { user: userData, session: sessionData } = response.data;
+      setUser(userData);
+      setProfile(userData);
+      setSession(sessionData);
+      localStorage.setItem('session', JSON.stringify(sessionData));
+      
+      return { data: response.data, error: null };
     } catch (error) {
-      return { data: null, error };
+      const errorMessage = error.response?.data?.detail || 'Signup failed';
+      return { data: null, error: { message: errorMessage } };
     }
   };
 
   const signIn = async (email, password) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const response = await axios.post(`${API}/auth/login`, {
         email,
-        password,
+        password
       });
-      if (error) throw error;
-      return { data, error: null };
+      
+      const { user: userData, session: sessionData } = response.data;
+      setUser(userData);
+      setProfile(userData);
+      setSession(sessionData);
+      localStorage.setItem('session', JSON.stringify(sessionData));
+      
+      return { data: response.data, error: null };
     } catch (error) {
-      return { data: null, error };
+      const errorMessage = error.response?.data?.detail || 'Login failed';
+      return { data: null, error: { message: errorMessage } };
     }
   };
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      if (session?.access_token) {
+        await axios.post(`${API}/auth/logout`, {}, {
+          headers: { Authorization: `Bearer ${session.access_token}` }
+        });
+      }
+    } catch (error) {
+      console.error('Error signing out:', error);
+    } finally {
+      localStorage.removeItem('session');
       setUser(null);
       setProfile(null);
       setSession(null);
-    } catch (error) {
-      console.error('Error signing out:', error);
     }
   };
 
@@ -104,7 +123,7 @@ export const AuthProvider = ({ children }) => {
     signUp,
     signIn,
     signOut,
-    refreshProfile: () => user && fetchProfile(user.id),
+    refreshProfile: () => session?.access_token && fetchProfile(session.access_token),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
