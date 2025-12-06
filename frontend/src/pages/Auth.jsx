@@ -48,7 +48,7 @@ const Auth = () => {
         if (error) throw error;
         toast({
           title: 'Account created!',
-          description: 'Welcome to Kitara Cinema!',
+          description: 'Welcome to Ekitara Cinema!',
         });
         navigate(from, { replace: true });
       }
@@ -78,7 +78,7 @@ const Auth = () => {
           <CardDescription className="text-gray-400 text-center">
             {isLogin
               ? 'Sign in to continue watching your favorite shows'
-              : 'Sign up to start your journey with Kitara Cinema'}
+              : 'Sign up to start your journey with Ekitara Cinema'}
           </CardDescription>
         </CardHeader>
         <CardContent>

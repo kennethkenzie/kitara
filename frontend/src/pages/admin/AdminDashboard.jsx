@@ -80,7 +80,7 @@ const AdminDashboard = () => {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-4xl font-bold text-white mb-2">Admin Dashboard</h1>
-            <p className="text-gray-400">Manage your Kitara Cinema platform</p>
+            <p className="text-gray-400">Manage your Ekitara Cinema platform</p>
           </div>
           <div className="flex gap-3">
             <Button
