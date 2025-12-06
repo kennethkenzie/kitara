@@ -85,7 +85,7 @@ const Home = () => {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [currentSlide, featuredShows]);
+  }, [currentSlide, featuredShows, handleNext]);
 
   const handlePrev = useCallback(() => {
     if (isTransitioning) return;
