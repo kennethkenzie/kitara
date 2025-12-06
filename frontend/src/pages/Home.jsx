@@ -76,17 +76,7 @@ const Home = () => {
     return filtered;
   };
 
-  // Auto-advance carousel with fade
-  useEffect(() => {
-    if (featuredShows.length === 0) return;
-    
-    const interval = setInterval(() => {
-      handleNext();
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [currentSlide, featuredShows, handleNext]);
-
+  // Define navigation functions before useEffect
   const handlePrev = useCallback(() => {
     if (isTransitioning) return;
     setIsTransitioning(true);
@@ -100,6 +90,17 @@ const Home = () => {
     setCurrentSlide((prev) => (prev === featuredShows.length - 1 ? 0 : prev + 1));
     setTimeout(() => setIsTransitioning(false), 1000);
   }, [featuredShows.length, isTransitioning]);
+
+  // Auto-advance carousel with fade
+  useEffect(() => {
+    if (featuredShows.length === 0) return;
+    
+    const interval = setInterval(() => {
+      handleNext();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [currentSlide, featuredShows, handleNext]);
 
   useEffect(() => {
     fetchShows();
