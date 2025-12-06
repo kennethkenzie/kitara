@@ -17,7 +17,7 @@ import Fandom from "./pages/Fandom";
 import Brand from "./pages/Brand";
 import Auth from "./pages/Auth";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-import ShowsManagement from "./pages/admin/ShowsManagementImproved";
+import ShowsManagement from "./pages/admin/ShowsManagement";
 import ShowForm from "./pages/admin/ShowForm";
 import UsersManagement from "./pages/admin/UsersManagement";
 import { Toaster } from "./components/ui/toaster";
