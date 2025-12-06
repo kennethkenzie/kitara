@@ -205,7 +205,6 @@ const ShowsManagement = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-        </div>
       </div>
     </AdminLayout>
   );
