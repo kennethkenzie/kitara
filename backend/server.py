@@ -281,26 +281,70 @@ async def get_episodes(show_id: str):
 @api_router.get("/watchlist")
 async def get_watchlist(user = Depends(get_current_user)):
     try:
-        response = supabase.table('watchlist').select('*, shows(*)').eq('user_id', user.id).execute()
-        return response.data
+        query = """
+            SELECT w.id, w.show_id, w.created_at,
+                   s.id as show_id, s.title, s.thumbnail, s.category, 
+                   s.rating, s.views, s.total_episodes, s.is_exclusive,
+                   s.description, s.duration, s.is_featured
+            FROM watchlist w
+            JOIN shows s ON w.show_id = s.id
+            WHERE w.user_id = %s
+            ORDER BY w.created_at DESC
+        """
+        watchlist = execute_query(query, (user.id,), fetch_all=True)
+        
+        result = []
+        for item in watchlist:
+            result.append({
+                "id": str(item['id']),
+                "show_id": str(item['show_id']),
+                "created_at": str(item['created_at']),
+                "shows": {
+                    "id": str(item['show_id']),
+                    "title": item['title'],
+                    "thumbnail": item['thumbnail'],
+                    "category": item['category'],
+                    "rating": float(item['rating']) if item['rating'] else 0.0,
+                    "views": item['views'],
+                    "total_episodes": item['total_episodes'],
+                    "is_exclusive": item['is_exclusive'],
+                    "description": item['description'],
+                    "duration": item['duration'],
+                    "is_featured": item['is_featured']
+                }
+            })
+        
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.post("/watchlist/{show_id}")
 async def add_to_watchlist(show_id: str, user = Depends(get_current_user)):
     try:
-        response = supabase.table('watchlist').insert({
-            "user_id": user.id,
-            "show_id": show_id
-        }).execute()
-        return response.data
+        query = """
+            INSERT INTO watchlist (user_id, show_id)
+            VALUES (%s, %s)
+            ON CONFLICT (user_id, show_id) DO NOTHING
+            RETURNING id, user_id, show_id, created_at
+        """
+        result = execute_query(query, (user.id, show_id), fetch_one=True)
+        
+        if result:
+            return {
+                "id": str(result['id']),
+                "user_id": str(result['user_id']),
+                "show_id": str(result['show_id']),
+                "created_at": str(result['created_at'])
+            }
+        return {"message": "Already in watchlist"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 @api_router.delete("/watchlist/{show_id}")
 async def remove_from_watchlist(show_id: str, user = Depends(get_current_user)):
     try:
-        response = supabase.table('watchlist').delete().eq('user_id', user.id).eq('show_id', show_id).execute()
+        query = "DELETE FROM watchlist WHERE user_id = %s AND show_id = %s"
+        execute_query(query, (user.id, show_id), fetch_all=False)
         return {"message": "Removed from watchlist"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
