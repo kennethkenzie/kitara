@@ -37,11 +37,11 @@ const Categories = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black pt-24 px-12 pb-20">
-      <h1 className="text-4xl font-bold text-white mb-8">Browse by Category</h1>
+    <div className="min-h-screen bg-black pt-20 md:pt-24 px-4 md:px-8 lg:px-12 pb-20">
+      <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-6 md:mb-8">Browse by Category</h1>
 
       <Tabs defaultValue="all" className="w-full">
-        <TabsList className="bg-gray-900 border border-gray-800 p-1 mb-8 flex-wrap h-auto gap-2">
+        <TabsList className="bg-gray-900 border border-gray-800 p-1 mb-6 md:mb-8 flex-wrap h-auto gap-2">
           {categories.map((category) => (
             <TabsTrigger
               key={category.id}

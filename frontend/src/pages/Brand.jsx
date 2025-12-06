@@ -23,15 +23,15 @@ const Brand = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-black pt-24 px-12 pb-20">
+    <div className="min-h-screen bg-black pt-20 md:pt-24 px-4 md:px-8 lg:px-12 pb-20">
       <div className="max-w-6xl mx-auto">
         {/* Hero Section */}
         <div className="text-center mb-16">
           <div className="inline-block p-3 bg-pink-500/20 rounded-full mb-4">
             <Sparkles className="w-8 h-8 text-pink-500" />
           </div>
-          <h1 className="text-5xl font-bold text-white mb-4">Ekitara Cinema Brand</h1>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">Ekitara Cinema Brand</h1>
+          <p className="text-base md:text-lg lg:text-xl text-gray-400 max-w-2xl mx-auto">
             Revolutionizing short-form entertainment with bite-sized dramatic content that captivates millions of viewers worldwide.
           </p>
         </div>
