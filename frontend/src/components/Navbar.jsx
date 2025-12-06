@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, Download, History, ChevronDown, User, LogOut, Settings, Heart, Menu, X } from 'lucide-react';
 import {
@@ -15,8 +15,27 @@ import { useAuth } from '../contexts/AuthContext';
 const Navbar = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [hideNavbar, setHideNavbar] = useState(false);
   const navigate = useNavigate();
   const { user, profile, signOut } = useAuth();
+
+  // Hide navbar on mobile home page (feed view)
+  useEffect(() => {
+    const checkPath = () => {
+      const isMobile = window.innerWidth < 768;
+      const isHomePage = window.location.pathname === '/';
+      setHideNavbar(isMobile && isHomePage);
+    };
+    
+    checkPath();
+    window.addEventListener('resize', checkPath);
+    window.addEventListener('popstate', checkPath);
+    
+    return () => {
+      window.removeEventListener('resize', checkPath);
+      window.removeEventListener('popstate', checkPath);
+    };
+  }, []);
 
   const handleSignOut = async () => {
     await signOut();
@@ -28,6 +47,11 @@ const Navbar = () => {
     navigate(path);
     setIsMobileMenuOpen(false);
   };
+
+  // Don't render navbar on mobile feed
+  if (hideNavbar) {
+    return null;
+  }
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-sm border-b border-gray-800">
