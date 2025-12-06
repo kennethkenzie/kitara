@@ -6,14 +6,12 @@ import { Loader2 } from 'lucide-react';
 
 const categories = [
   { id: 'all', name: 'All Shows' },
-  { id: 'romance', name: 'Romance' },
-  { id: 'thriller', name: 'Thriller' },
-  { id: 'fantasy', name: 'Fantasy' },
-  { id: 'drama', name: 'Drama' },
-  { id: 'comedy', name: 'Comedy' },
-  { id: 'action', name: 'Action' },
-  { id: 'mystery', name: 'Mystery' },
-  { id: 'horror', name: 'Horror' },
+  { id: 'Fantasy', name: 'Fantasy' },
+  { id: 'Drama', name: 'Drama' },
+  { id: 'Comedy', name: 'Comedy' },
+  { id: 'Action', name: 'Action' },
+  { id: 'Mystery', name: 'Mystery' },
+  { id: 'Horror', name: 'Horror' },
 ];
 
 const Categories = () => {
