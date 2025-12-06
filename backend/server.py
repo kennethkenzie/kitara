@@ -108,7 +108,8 @@ async def signup(request: SignupRequest):
                 "email": user_data['email'],
                 "name": user_data['name'],
                 "avatar": user_data['avatar'],
-                "coins": user_data['coins']
+                "coins": user_data['coins'],
+                "is_admin": user_data.get('is_admin', False)
             },
             "session": {
                 "access_token": access_token,
@@ -163,7 +164,7 @@ async def logout(user = Depends(get_current_user)):
 @api_router.get("/auth/me")
 async def get_me(user = Depends(get_current_user)):
     try:
-        query = "SELECT id, email, name, avatar, coins, created_at FROM users WHERE id = %s"
+        query = "SELECT id, email, name, avatar, coins, is_admin, created_at FROM users WHERE id = %s"
         user_data = execute_query(query, (user.id,), fetch_one=True)
         
         if not user_data:
@@ -174,7 +175,8 @@ async def get_me(user = Depends(get_current_user)):
             "email": user_data['email'],
             "name": user_data['name'],
             "avatar": user_data['avatar'],
-            "coins": user_data['coins']
+            "coins": user_data['coins'],
+            "is_admin": user_data.get('is_admin', False)
         }
     except HTTPException:
         raise
