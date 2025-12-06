@@ -189,33 +189,91 @@ async def get_shows(
     search: Optional[str] = None
 ):
     try:
-        query = supabase.table('shows').select('*')
+        query = "SELECT * FROM shows WHERE 1=1"
+        params = []
         
         if category:
-            query = query.eq('category', category)
+            query += " AND category = %s"
+            params.append(category)
         if featured is not None:
-            query = query.eq('is_featured', featured)
+            query += " AND is_featured = %s"
+            params.append(featured)
         if search:
-            query = query.ilike('title', f'%{search}%')
+            query += " AND title ILIKE %s"
+            params.append(f'%{search}%')
         
-        response = query.execute()
-        return response.data
+        query += " ORDER BY created_at DESC"
+        
+        shows = execute_query(query, tuple(params) if params else None, fetch_all=True)
+        
+        # Convert UUID to string for JSON serialization
+        result = []
+        for show in shows:
+            result.append({
+                "id": str(show['id']),
+                "title": show['title'],
+                "thumbnail": show['thumbnail'],
+                "category": show['category'],
+                "rating": float(show['rating']) if show['rating'] else 0.0,
+                "views": show['views'],
+                "total_episodes": show['total_episodes'],
+                "is_exclusive": show['is_exclusive'],
+                "description": show['description'],
+                "duration": show['duration'],
+                "is_featured": show['is_featured']
+            })
+        
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/shows/{show_id}")
 async def get_show(show_id: str):
     try:
-        response = supabase.table('shows').select('*').eq('id', show_id).single().execute()
-        return response.data
+        query = "SELECT * FROM shows WHERE id = %s"
+        show = execute_query(query, (show_id,), fetch_one=True)
+        
+        if not show:
+            raise HTTPException(status_code=404, detail="Show not found")
+        
+        return {
+            "id": str(show['id']),
+            "title": show['title'],
+            "thumbnail": show['thumbnail'],
+            "category": show['category'],
+            "rating": float(show['rating']) if show['rating'] else 0.0,
+            "views": show['views'],
+            "total_episodes": show['total_episodes'],
+            "is_exclusive": show['is_exclusive'],
+            "description": show['description'],
+            "duration": show['duration'],
+            "is_featured": show['is_featured']
+        }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=404, detail="Show not found")
 
 @api_router.get("/shows/{show_id}/episodes")
 async def get_episodes(show_id: str):
     try:
-        response = supabase.table('episodes').select('*').eq('show_id', show_id).order('episode_number').execute()
-        return response.data
+        query = "SELECT * FROM episodes WHERE show_id = %s ORDER BY episode_number"
+        episodes = execute_query(query, (show_id,), fetch_all=True)
+        
+        result = []
+        for ep in episodes:
+            result.append({
+                "id": str(ep['id']),
+                "show_id": str(ep['show_id']),
+                "episode_number": ep['episode_number'],
+                "title": ep['title'],
+                "duration": ep['duration'],
+                "is_locked": ep['is_locked'],
+                "thumbnail": ep['thumbnail'],
+                "coins_required": ep['coins_required']
+            })
+        
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
